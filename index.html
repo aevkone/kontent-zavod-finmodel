@@ -30,7 +30,8 @@
     --s-revenue: #3987e5;
     --s-costs: #ff3b52;
     --s-profit: #199e70;
-    --s-clients: #9085e9;
+    --s-clients: #3987e5;
+    --s-loss: #9085e9;
     --display: "Oswald", Impact, "Arial Narrow", Arial, sans-serif;
     --text: "Onest", -apple-system, "Segoe UI", Arial, sans-serif;
     --r-card: 20px;
@@ -169,7 +170,7 @@
 
   /* ——— таблица ——— */
   .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--card); }
-  table.months { border-collapse: collapse; width: 100%; min-width: 1080px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  table.months { border-collapse: collapse; width: 100%; min-width: 1320px; font-size: 13px; font-variant-numeric: tabular-nums; }
   .months th, .months td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
   .months thead th {
     font: 500 11px/1.25 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
@@ -181,6 +182,11 @@
   .months tr.year td { border-top: 2px solid rgba(228,16,43,.55); }
   .months tfoot td { font-weight: 600; background: var(--card-2); border-bottom: 0; }
   .months tfoot td:first-child { background: var(--card-2); }
+
+  table.cmp { min-width: 560px; }
+  .cmp td, .cmp th { white-space: normal; }
+  .cmp td:first-child { color: var(--ink-2); }
+  .cmp button[disabled] { opacity: .45; cursor: default; }
 
   /* ——— пояснения ——— */
   .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
@@ -199,7 +205,7 @@
   <header class="hero">
     <div class="eyebrow">Контент-завод 2.0 · подписка</div>
     <h1>Финмодель <em>Контент-завода</em></h1>
-    <p class="lead">Выручка, расходы и прибыль по месяцам на два года вперёд. Меняйте цену подписки, приток клиентов, рекламу, сервер и налоги — всё пересчитывается сразу. Исходные числа — из <strong>сметы и финмодели 25.09.2026</strong>: сервер в Алматы, публикация во все соцсети внутри подписки, первый месяц — ноябрь 2026.</p>
+    <p class="lead">Выручка, расходы и прибыль по месяцам на два года вперёд. Меняйте цену подписки, приток клиентов, рекламу, сервер и налоги — всё пересчитывается сразу. Исходные числа — из <strong>сметы и финмодели 25.09.2026</strong>: компания и сервер в Армении или ОАЭ, реклама 50 000 ₽ в месяц, публикация во все соцсети внутри подписки, первый месяц — ноябрь 2026.</p>
   </header>
 </div>
 
@@ -215,17 +221,18 @@
     <p class="sub">Выручка равна расходам плюс прибыль: в расходы входят налоги, комиссия оплаты, сервер, публикация, Claude, команда и реклама. Наведите на график, чтобы увидеть месяц.</p>
     <div class="charts">
       <div class="card">
-        <p class="chart-title">Выручка, расходы и чистая прибыль, ₽ в месяц</p>
+        <p class="chart-title">Выручка по месяцам: из чего она складывается, ₽</p>
         <div class="legend">
-          <span><i style="background:var(--s-revenue)"></i>Выручка</span>
-          <span><i style="background:var(--s-costs)"></i>Все расходы</span>
-          <span><i style="background:var(--s-profit)"></i>Чистая прибыль</span>
+          <span><i style="background:var(--s-costs);height:10px;width:10px"></i>Все расходы</span>
+          <span><i style="background:var(--s-profit);height:10px;width:10px"></i>Чистая прибыль</span>
+          <span><i style="background:var(--s-loss);height:10px;width:10px"></i>Убыток месяца</span>
+          <span style="color:var(--ink-3)">высота столбца над нулём — выручка</span>
         </div>
         <div class="chart" id="chartMoney"></div>
       </div>
       <div class="card">
         <p class="chart-title">Клиентов на конец месяца</p>
-        <div class="legend"><span>все тарифы вместе</span></div>
+        <div class="legend"><span><i style="background:var(--s-clients);height:10px;width:10px"></i>все тарифы вместе</span></div>
         <div class="chart" id="chartClients"></div>
       </div>
     </div>
@@ -248,6 +255,12 @@
     </div>
   </section>
 
+  <section aria-labelledby="h-countries">
+    <h2 id="h-countries">Армения или ОАЭ</h2>
+    <p class="sub">Юрлицо и сервер в одной из двух стран. Прибыль посчитана по вашим текущим настройкам — меняется только то, что зависит от страны.</p>
+    <div class="table-wrap"><table class="months cmp" id="countries"></table></div>
+  </section>
+
   <section aria-labelledby="h-table">
     <h2 id="h-table">Таблица по месяцам</h2>
     <p class="sub">Все суммы — в рублях, с учётом дробных клиентов (в среднем), клиенты округлены. Красная черта — начало второго года.</p>
@@ -264,6 +277,8 @@
         <li><strong>Рост органического притока</strong> — сарафан и соцсети Валерии со временем приводят больше людей.</li>
         <li><strong>Скидка на первый месяц</strong> и <strong>ежегодная индексация цены</strong>.</li>
         <li><strong>Реферальная программа</strong>: доля клиентов, которые приводят друга, и бонус за каждого.</li>
+        <li><strong>Реинвест</strong>: доля прибыли месяца уходит в рекламу следующего и приводит новых клиентов.</li>
+        <li><strong>Партнёрские продажи</strong>: клиенты от партнёров и агентское вознаграждение — процент от их оплат на заданный срок.</li>
       </ul></div>
       <div class="card"><ul>
         <li><strong>Сервер ступенями</strong>: главный компьютер дорожает после порога клиентов, рабочие компьютеры добавляются по мере нагрузки, запасной главный — по желанию.</li>
@@ -273,7 +288,8 @@
       </ul></div>
       <div class="card"><ul>
         <li><strong>НДС 18,03 %</strong> для иностранной компании, продающей электронные услуги россиянам (НК РФ ст. 174.2).</li>
-        <li><strong>Налог компании</strong> — с прибыли или с выручки, ставку задаёте сами.</li>
+        <li><strong>Страна компании</strong> — Армения или ОАЭ: налоги, сервер, обслуживание компании подставляются сразу.</li>
+        <li><strong>Налог компании</strong> — с прибыли или с выручки, и <strong>налог при выводе прибыли владельцу</strong>.</li>
         <li><strong>Комиссия ЮKassa, конвертация валюты, возвраты</strong> — всё, что теряется между оплатой клиента и нашим счётом.</li>
         <li><strong>Разовые расходы на запуск</strong> и <strong>месяц окупаемости</strong>, <strong>ценность клиента за всё время (LTV)</strong> и <strong>стоимость привлечения (CAC)</strong>.</li>
       </ul></div>
@@ -281,7 +297,7 @@
   </section>
 
   <footer>
-    Модель — расчёт по допущениям, а не обещание. Исходные данные: смета сервера (дорожка «сервер», 25.09.2026, Serverspace Алматы), финмодель ред. 2 (рынок РФ и Европы, три тарифа), замер Claude (137–281 ₽ на клиента в месяц). Налоги не проверены бухгалтером.
+    Модель — расчёт по допущениям, а не обещание. Исходные данные: смета сервера (дорожка «сервер», 25.09.2026), сравнение Армении и ОАЭ, финмодель ред. 2 (рынок РФ и Европы, три тарифа), замер Claude (137–281 ₽ на клиента в месяц). Налоги не проверены бухгалтером.
   </footer>
 </div>
 
@@ -303,14 +319,24 @@
     refRate: 0,              // % клиентов в месяц приводят друга
     refBonus: 0,             // ₽ за каждого приведённого
     channels: [
-      { id: "tgads",   name: "Telegram Ads",               budget: 0, cac: 12000 },
-      { id: "seeds",   name: "Посевы в Telegram-каналах",  budget: 0, cac: 8000 },
-      { id: "vk",      name: "VK Реклама",                 budget: 0, cac: 10000 },
+      { id: "tgads",   name: "Telegram Ads",               budget: 15000, cac: 12000 },
+      { id: "seeds",   name: "Посевы в Telegram-каналах",  budget: 15000, cac: 8000 },
+      { id: "vk",      name: "VK Реклама",                 budget: 10000, cac: 10000 },
       { id: "direct",  name: "Яндекс Директ",              budget: 0, cac: 14000 },
       { id: "bloggers",name: "Блогеры и интеграции",       budget: 0, cac: 15000 },
-      { id: "webinar", name: "Эфиры и вебинары",           budget: 0, cac: 6000 },
+      { id: "webinar", name: "Эфиры и вебинары",           budget: 10000, cac: 6000 },
       { id: "other",   name: "Прочее",                     budget: 0, cac: 10000 }
     ],
+    reinvestPct: 30,         // % чистой прибыли месяца — в рекламу следующего
+    reinvestCac: 0,          // ₽ за клиента из реинвеста; 0 — средняя цена по каналам
+    reinvestMax: 200000,     // ₽ в месяц — потолок реинвеста; 0 — без потолка
+    partnerNew: 2,           // новых клиентов в месяц от партнёров (со 2-го месяца)
+    agentFee: 30,            // % от оплат клиента партнёра — агентское вознаграждение
+    agentMonths: 12,         // сколько месяцев платим партнёру; 0 — всё время
+    country: "custom",       // armenia | uae | custom
+    localVat: 0,             // % местного НДС страны компании
+    dividendTax: 5,          // % при выводе прибыли владельцу
+    companyYearly: 0,        // ₽ в год: лицензия и обслуживание компании
     vat: 18.03,              // %
     acquiring: 4.64,         // %
     conversion: 0,           // %
@@ -359,14 +385,63 @@
     return MONTHS_RU[m] + " " + String(y).slice(2);
   }
 
+  /* ————— страны: пресеты (заполняются по исследованию дорожки «сервер») ————— */
+  const PRESET_KEYS = ["mainSmall", "mainLarge", "workerPrice", "workerHours", "conversion", "taxBase",
+    "taxRate", "localVat", "dividendTax", "accounting", "companyYearly", "launchOnce"];
+  const PRESETS = {
+    // Армения — исследование 25.09.2026 (НК РА на arlis.am): ООО, общий режим 18 % с прибыли
+    // (до ~27 млн ₽ выручки в год доступен оборотный налог ≈5 % выручки), армянского НДС на
+    // электронные услуги россиянам нет, дивиденды 5 % + доплата НДФЛ владелицы до 13 %,
+    // ЮKassa выплачивает в рублях/драмах, зачисление рублей 0,5 %. Сервер — ЦЕНЫ УТОЧНЯЮТСЯ.
+    armenia: { name: "Армения", mainSmall: 9098, mainLarge: 14719, workerPrice: 9844, workerHours: 360, conversion: 0.5,
+      taxBase: "profit", taxRate: 18, localVat: 0, dividendTax: 13, accounting: 15000, companyYearly: 60000, launchOnce: 60000 },
+    // ОАЭ — исследование 25.09.2026: SHAMS с визой, льгота малого бизнеса (налог 0 % до 2029),
+    // экспорт услуг — НДС ОАЭ 0 %, дивиденды — НДФЛ владелицы 13 %, Serverspace Дубай, ЮKassa — в юанях (+2 %)
+    uae: { name: "ОАЭ", mainSmall: 7533, mainLarge: 12300, workerPrice: 8293, workerHours: 360, conversion: 2,
+      taxBase: "profit", taxRate: 0, localVat: 0, dividendTax: 13, accounting: 23000, companyYearly: 351000, launchOnce: 116000 }
+  };
+  const COUNTRY_ROWS = [
+    ["Налоговый режим", ["общий: 18 % с прибыли. До ~27 млн ₽ выручки в год можно оборотный налог ≈5 % выручки (1 % — если налоговая признает деятельность высокими технологиями)",
+      "льгота малого бизнеса: 0 % при выручке до ~69 млн ₽ в год, продлена до 2029"]],
+    ["Российский НДС 18,03 %", ["платится в любом случае", "платится в любом случае"]],
+    ["Выплаты ЮKassa", ["в рублях или драмах; зачисление рублей 0,5 %", "дирхамов нет — нужен счёт в юанях, +2 % на валюте"]],
+    ["Контролируемая иностранная компания", ["нет — Армения в ЕАЭС", "да: уведомления в ФНС, налог с нераспределённой прибыли сверх 10 млн ₽"]],
+    ["Открыть компанию", ["очно в Ереване или через юрфирму по доверенности; госпошлина 0, 1 день", "дистанционно, но для визы и банка нужна поездка"]],
+    ["Банк", ["рублёвые счета есть (IDBank, Араратбанк)", "рублёвых счетов не подтверждено; Wio 99 AED в месяц"]],
+    ["Откуда цифры", ["исследование 25.09.2026; цены сервера в Армении уточняются — пока как в Алматы", "исследование 25.09.2026; SHAMS с визой, Serverspace Дубай"]]
+  ];
+  function applyPreset(code) {
+    const pr = PRESETS[code]; if (!pr) return;
+    PRESET_KEYS.forEach(k => { if (k in pr) S[k] = pr[k]; });
+  }
+
   /* ————— состояние ————— */
-  const KEY = "kz-finmodel-v1";
+  const KEY = "kz-finmodel-v2";
   const clone = o => JSON.parse(JSON.stringify(o));
   let S = clone(DEFAULTS);
   try {
     const saved = localStorage.getItem(KEY);
+    const old = saved ? null : localStorage.getItem("kz-finmodel-v1");
     if (saved) S = merge(clone(DEFAULTS), JSON.parse(saved));
+    else if (old) S = migrateV1(JSON.parse(old));
   } catch (e) { /* без памяти браузера — просто исходные */ }
+
+  // Перенос цифр из первой версии калькулятора: всё, что человек ввёл, остаётся как есть.
+  // В первой версии бюджеты рекламы по умолчанию были 0 — нетронутый 0 заменяется новым
+  // бюджетом, любое другое число — это ввод человека, его не трогаем. Страна — «свои
+  // значения», чтобы пресет не перезаписал введённые сервер и налоги.
+  function migrateV1(old) {
+    const s = merge(clone(DEFAULTS), old);
+    if (Array.isArray(old.channels)) {
+      s.channels = s.channels.map((c, i) => {
+        const o = old.channels[i];
+        return (o && typeof o.budget === "number" && o.budget !== 0) ? c : Object.assign({}, c, { budget: DEFAULTS.channels[i].budget });
+      });
+    }
+    s.country = "custom";
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+    return s;
+  }
 
   function merge(base, over) {
     if (!over || typeof over !== "object") return base;
@@ -380,6 +455,7 @@
     }
     return base;
   }
+  if (S.country && S.country !== "custom") applyPreset(S.country);
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
   /* ————— расчёт ————— */
@@ -389,27 +465,36 @@
     const newSum = T.reduce((a, t) => a + t.newPer, 0) || 1;
     const mix = T.map(t => t.newPer / newSum);            // доли тарифов в новых продажах
     const paidPerMonth = s.channels.reduce((a, c) => a + (c.cac > 0 ? c.budget / c.cac : 0), 0);
-    const marketing = s.channels.reduce((a, c) => a + c.budget, 0);
+    const baseAds = s.channels.reduce((a, c) => a + c.budget, 0);
+    // цена клиента для реинвеста: своя или средняя по каналам
+    const reinvestCac = s.reinvestCac > 0 ? s.reinvestCac : (paidPerMonth > 0 ? baseAds / paidPerMonth : 10000);
     const claudeRub = s.usdRate * (1 + s.claudeMarkup / 100);
 
     let clients = T.map(() => 0);
-    let cum = -(s.launchOnce + s.otherOnce);  // разовые — до первого месяца
+    let cohorts = [];                          // партнёрские когорты: {age, sizes[]}
+    let cum = 0;
+    let prevNet = 0;
     const rows = [];
     for (let i = 0; i < n; i++) {
       const growth = Math.pow(1 + s.organicGrowth / 100, Math.max(0, i - 1));
       const idx = Math.pow(1 + s.priceIndex / 100, Math.floor(i / 12));
       const prevTotal = clients.reduce((a, b) => a + b, 0);
       const refNew = prevTotal * s.refRate / 100;
-      let churned = 0, newOrg = 0, newPaid = 0, newRef = 0, revenue = 0, claude = 0, storage = 0, hours = 0;
+      let reinvest = i > 0 ? Math.max(0, prevNet) * s.reinvestPct / 100 : 0;
+      if (s.reinvestMax > 0) reinvest = Math.min(reinvest, s.reinvestMax);
+      const reinvestNew = reinvest / Math.max(1, reinvestCac);
+      const partnerNew = i > 0 ? s.partnerNew : 0;
+      let churned = 0, newOrg = 0, newPaid = 0, newRef = 0, newPartner = 0, revenue = 0, claude = 0, storage = 0, hours = 0;
       clients = clients.map((c, k) => {
         const t = T[k];
         const out = c * t.churn / 100;
         const org = i === 0 ? t.base : t.newPer * growth;
-        const paid = paidPerMonth * mix[k];
+        const paid = (paidPerMonth + reinvestNew) * mix[k];
         const ref = refNew * mix[k];
-        const nw = org + paid + ref;
+        const prt = partnerNew * mix[k];
+        const nw = org + paid + ref + prt;
         const end = c - out + nw;
-        churned += out; newOrg += org; newPaid += paid; newRef += ref;
+        churned += out; newOrg += org; newPaid += paid; newRef += ref; newPartner += prt;
         const price = t.price * idx;
         revenue += (end - nw) * price + nw * price * (1 - s.firstMonthDiscount / 100);
         claude += end * t.claudeUsd * claudeRub + nw * s.onboardUsd * claudeRub;
@@ -417,12 +502,22 @@
         hours += end * t.hours;
         return end;
       });
+      // агентское вознаграждение партнёрам: % от оплат их клиентов, пока не истёк срок
+      cohorts = cohorts.map(c => ({ age: c.age + 1, sizes: c.sizes.map((v, k) => v * (1 - T[k].churn / 100)) }));
+      if (partnerNew > 0) cohorts.push({ age: 0, sizes: T.map((_, k) => partnerNew * mix[k]) });
+      let agent = 0;
+      cohorts.forEach(c => {
+        if (s.agentMonths > 0 && c.age >= s.agentMonths) return;
+        const pay = c.sizes.reduce((a, v, k) => a + v * T[k].price * idx * (c.age === 0 ? 1 - s.firstMonthDiscount / 100 : 1), 0);
+        agent += pay * s.agentFee / 100;
+      });
+
       const total = clients.reduce((a, b) => a + b, 0);
       const accounts = total * s.networks;
       const publishing = s.pubOverride > 0 ? accounts * s.pubOverride : postmypost(accounts);
       const refCost = newRef * s.refBonus;
 
-      const vat = revenue * s.vat / 100;
+      const vat = revenue * (s.vat + s.localVat) / 100;
       const fees = revenue * (s.acquiring + s.conversion + s.refunds) / 100;
       const variable = claude + storage + publishing + refCost;
 
@@ -433,16 +528,21 @@
       const support = total >= s.supportFrom && s.supportFrom > 0
         ? Math.ceil(total / Math.max(1, s.supportPer) - 1e-9) * s.supportSalary : 0;
       const team = support + s.ownersSalary;
-      const fixed = server + team + s.accounting + s.otherFixed;
+      const once = i === 0 ? s.launchOnce + s.otherOnce : 0;   // разовые — расход первого месяца
+      const other = s.accounting + s.otherFixed + s.companyYearly / 12 + once;
+      const fixed = server + team + other;
+      const marketing = baseAds + reinvest;
 
-      const pbt = revenue - vat - fees - variable - fixed - marketing;
+      const pbt = revenue - vat - fees - variable - fixed - marketing - agent;
       const tax = s.taxBase === "revenue" ? revenue * s.taxRate / 100 : Math.max(0, pbt) * s.taxRate / 100;
       const net = pbt - tax;
+      const dividendTax = Math.max(0, net) * s.dividendTax / 100;
+      prevNet = net;
       cum += net;
       rows.push({
-        label: monthLabel(i), i, total, newOrg, newPaid, newRef, churned, revenue,
+        label: monthLabel(i), i, total, newOrg, newPaid, newRef, newPartner, churned, revenue,
         vatFees: vat + fees, vat, fees, claude, storage, publishing, variable, server, workers, team,
-        other: s.accounting + s.otherFixed, marketing, tax, net, cum,
+        other, marketing, reinvest, agent, tax, net, dividendTax, cum,
         costs: revenue - net
       });
     }
@@ -454,10 +554,12 @@
     const avgChurn = T.reduce((a, t, k) => a + t.churn * mix[k], 0) / 100;
     const lastMargin = last.total > 0 ? (last.revenue - last.vatFees - last.variable) / last.total : 0;
     const ltv = avgChurn > 0 ? lastMargin / avgChurn : null;
-    const cac = paidPerMonth > 0 ? marketing / paidPerMonth : null;
+    const allPaid = sum("newPaid");
+    const cac = allPaid > 0 ? sum("marketing") / allPaid : null;
     return {
       rows, last,
       revenue: sum("revenue"), net: sum("net"), marketing: sum("marketing"), tax: sum("tax"), vatFees: sum("vatFees"),
+      agent: sum("agent"), reinvest: sum("reinvest"), ownerNet: sum("net") - sum("dividendTax"),
       firstPlus, payback, ltv, cac, arpu: last.total > 0 ? last.revenue / last.total : 0,
       paidPerMonth
     };
@@ -487,10 +589,29 @@
         note: "На сколько процентов каждый месяц растёт приток из соцсетей Валерии и сарафана." },
       { k: "refRate", label: "Приводят друга", unit: "% /мес", step: 0.5, tag: "допущение",
         note: "Доля клиентов, которые в месяц приводят одного нового." },
-      { k: "refBonus", label: "Бонус за приведённого", unit: "₽", step: 500, tag: "допущение" }
+      { k: "refBonus", label: "Бонус за приведённого", unit: "₽", step: 500, tag: "допущение",
+        note: "Работает, только если «Приводят друга» больше 0." }
     ]},
     { title: "Реклама", hint: "бюджет и цена клиента по каналам", channels: true, open: true },
-    { title: "Налоги и комиссии", hint: "НДС, налог компании, оплата", fields: [
+    { title: "Реинвест в рекламу", hint: "часть прибыли — обратно в рекламу", open: true, fields: [
+      { k: "reinvestPct", label: "Доля чистой прибыли в рекламу", unit: "%", step: 5, tag: "решение",
+        note: "Процент прибыли месяца, который в следующем месяце уходит в рекламу сверх основного бюджета. Убыточный месяц ничего не добавляет." },
+      { k: "reinvestCac", label: "Цена клиента из реинвеста", unit: "₽", step: 500, tag: "допущение",
+        note: "0 — средняя цена клиента по вашим каналам рекламы." },
+      { k: "reinvestMax", label: "Потолок реинвеста в месяц", unit: "₽", step: 10000, tag: "допущение",
+        note: "Реклама дорожает, когда в неё вливают больше денег, — без потолка модель обещает бесконечный рост. 0 — без потолка." }
+    ]},
+    { title: "Партнёрские продажи", hint: "клиенты от партнёров и агентское вознаграждение", open: true, fields: [
+      { k: "partnerNew", label: "Новых клиентов от партнёров", unit: "в месяц", step: 0.5, tag: "допущение",
+        note: "Со второго месяца. Делятся по тарифам так же, как остальные продажи." },
+      { k: "agentFee", label: "Агентское вознаграждение", unit: "% оплат", step: 5, tag: "решение",
+        note: "Сколько процентов от каждой оплаты клиента, которого привёл партнёр, отдаём партнёру." },
+      { k: "agentMonths", label: "Платим партнёру", unit: "мес", step: 1, tag: "решение",
+        note: "Сколько месяцев после продажи идёт вознаграждение. 0 — всё время, пока клиент платит." }
+    ]},
+    { title: "Налоги и комиссии", hint: "страна компании, НДС, налоги, оплата", open: true, fields: [
+      { k: "country", label: "Страна компании и сервера", select: [["armenia", "Армения"], ["uae", "ОАЭ"], ["custom", "свои значения"]],
+        note: "Выбор страны подставляет её налоги, сервер и обслуживание компании. Любое поле потом можно поправить — страна станет «свои значения»." },
       { k: "vat", label: "НДС России (электронные услуги)", unit: "%", step: 0.01, tag: "замер",
         note: "НК РФ ст. 174.2: иностранная компания, продающая электронные услуги россиянам. Цена подписки включает НДС." },
       { k: "taxBase", label: "Налог компании считается", select: [["profit", "с прибыли"], ["revenue", "с выручки"]] },
@@ -500,7 +621,12 @@
         note: "2,8 % + 1 % за чеки + НДС на комиссию. Для иностранной компании тарифы те же." },
       { k: "conversion", label: "Конвертация валюты", unit: "%", step: 0.5, tag: "допущение",
         note: "+2 %, если банк компании не принимает рубли и ЮKassa зачисляет в валюте." },
-      { k: "refunds", label: "Возвраты", unit: "% выручки", step: 0.5, tag: "допущение" }
+      { k: "refunds", label: "Возвраты", unit: "% выручки", step: 0.5, tag: "допущение" },
+      { k: "localVat", label: "НДС страны компании", unit: "%", step: 1,
+        note: "Местный НДС с нашей выручки, если он есть. Продажа услуг клиентам за границей обычно им не облагается." },
+      { k: "dividendTax", label: "Налог при выводе прибыли владельцу", unit: "%", step: 1,
+        note: "Налог на дивиденды. В сводке — отдельной строкой «владельцу после вывода»." },
+      { k: "companyYearly", label: "Лицензия и обслуживание компании", unit: "₽/год", step: 5000 }
     ]},
     { title: "Сервер", hint: "Serverspace, Алматы", fields: [
       { k: "mainSmall", label: "Главный компьютер", unit: "₽/мес", step: 100, tag: "замер" },
@@ -508,9 +634,10 @@
       { k: "mainLarge", label: "Мощный главный компьютер", unit: "₽/мес", step: 100, tag: "замер" },
       { k: "workerPrice", label: "Рабочий компьютер (8 ядер)", unit: "₽/мес", step: 100, tag: "замер" },
       { k: "workerHours", label: "Полезных часов счёта у рабочего", unit: "ч/мес", step: 10, tag: "допущение",
-        note: "Половина месяца. Рабочие добавляются, когда клиентам не хватает часов." },
+        note: "Половина месяца. Рабочие добавляются ступенями, когда клиентам не хватает часов, — поэтому маленькое изменение может не сдвинуть сумму." },
       { k: "backupOn", label: "Запасной главный компьютер", check: true },
-      { k: "backupFrom", label: "Включать запасной с", unit: "клиентов", step: 5 }
+      { k: "backupFrom", label: "Включать запасной с", unit: "клиентов", step: 5,
+        note: "Работает, только когда запасной компьютер включён." }
     ]},
     { title: "Себестоимость клиента", hint: "публикация, Claude, хранение", fields: [
       { k: "networks", label: "Соцсетей у клиента", unit: "шт", step: 1, tag: "замер",
@@ -528,7 +655,8 @@
       { k: "ownersSalary", label: "Зарплата владельцев", unit: "₽/мес", step: 5000 },
       { k: "accounting", label: "Бухгалтерия компании за границей", unit: "₽/мес", step: 1000, tag: "допущение" },
       { k: "otherFixed", label: "Прочие сервисы и подписки", unit: "₽/мес", step: 1000, tag: "допущение" },
-      { k: "launchOnce", label: "Регистрация компании (разово)", unit: "₽", step: 500, tag: "замер" },
+      { k: "launchOnce", label: "Открытие компании (разово)", unit: "₽", step: 500, tag: "замер",
+        note: "Разовые расходы вычитаются из прибыли первого месяца." },
       { k: "otherOnce", label: "Прочие разовые на запуск", unit: "₽", step: 5000 }
     ]}
   ];
@@ -553,7 +681,7 @@
           S.channels.map((c, ci) => `<tr><td>${c.name}</td>
             <td>${numInput(`c-${ci}-budget`, c.budget, 5000, `${c.name}: бюджет в месяц`)}</td>
             <td>${numInput(`c-${ci}-cac`, c.cac, 500, `${c.name}: цена клиента`)}</td></tr>`).join("") +
-          `</tbody></table></div><p class="note" style="color:var(--ink-3);font-size:12.5px;margin:0">Цена клиента (CAC) — <span class="tag">допущение</span>: сколько рублей рекламы уходит на одного оплатившего подписку. Замените своими цифрами после первых запусков. Новые клиенты из рекламы делятся по тарифам так же, как органические.</p>`;
+          `</tbody></table></div><p class="note" style="color:var(--ink-3);font-size:12.5px;margin:0">Цена клиента (CAC) — <span class="tag">допущение</span>: сколько рублей рекламы уходит на одного оплатившего подписку. У канала с бюджетом 0 цена клиента ни на что не влияет. Замените своими цифрами после первых запусков. Стартовый бюджет — 50 000 ₽ в месяц. Новые клиенты из рекламы делятся по тарифам так же, как органические.</p>`;
       }
       if (g.fields) body += g.fields.map(f => {
         const v = S[f.k];
@@ -576,7 +704,14 @@
     let m;
     if ((m = id.match(/^t-(\d+)-(\w+)$/))) S.tariffs[+m[1]][m[2]] = val;
     else if ((m = id.match(/^c-(\d+)-(\w+)$/))) S.channels[+m[1]][m[2]] = val;
-    else if ((m = id.match(/^f-(\w+)$/))) S[m[1]] = val;
+    else if ((m = id.match(/^f-(\w+)$/))) {
+      S[m[1]] = val;
+      if (m[1] === "country") { applyPreset(val); save(); renderParams(); update(); return; }
+      if (PRESET_KEYS.includes(m[1]) && S.country !== "custom") {
+        S.country = "custom";
+        const sel = document.getElementById("f-country"); if (sel) sel.value = "custom";
+      }
+    }
     save();
     update();
   }
@@ -648,6 +783,70 @@
     hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
   }
 
+  // Столбцы: одна ось, у каждого столбца части складываются снизу вверх (зазор 2 px),
+  // отрицательная часть — вниз от нуля. Верх столбца скруглён на 4 px.
+  function barChart(host, rows, spec) {
+    const W = spec.w || 760, H = spec.h || 300, L = spec.left || 64, R = spec.right || 16, Tp = 12, B = 30;
+    const tops = rows.map(r => spec.pos.reduce((a, p) => a + Math.max(0, p.get(r)), 0));
+    const bots = rows.map(r => spec.neg ? Math.min(0, spec.neg.get(r)) : 0);
+    let lo = Math.min(0, ...bots), hi = Math.max(0, ...tops);
+    if (hi === lo) hi = lo + 1;
+    const step = niceStep(hi - lo, 5);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const n = rows.length, slot = (W - L - R) / n, bw = Math.max(3, slot * 0.7);
+    const xc = i => L + slot * (i + 0.5);
+    const y = v => Tp + (H - Tp - B) * (1 - (v - lo) / (hi - lo));
+    let g = "";
+    for (let v = lo; v <= hi + step / 2; v += step) {
+      const yy = y(v).toFixed(1);
+      g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${Math.abs(v) < step / 1e6 ? "rgba(255,255,255,.38)" : "rgba(255,255,255,.08)"}" stroke-width="1"/>`;
+      g += `<text x="${L - 8}" y="${yy}" dy="4" text-anchor="end" fill="rgba(255,255,255,.52)" font-size="11">${spec.fmt(v)}</text>`;
+    }
+    rows.forEach((r, i) => {
+      if (i % 3 === 0 || i === n - 1)
+        g += `<text x="${xc(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,.52)" font-size="11">${r.label}</text>`;
+    });
+    const rr = Math.min(4, bw / 2);
+    // прямоугольник со скруглённым «свободным» концом (верх у положительных, низ у отрицательных)
+    function seg(x, y0, y1, color, roundTop, roundBottom) {
+      const h = Math.max(0, y1 - y0); if (h < 0.5) return "";
+      const rt = roundTop ? Math.min(rr, h) : 0, rb = roundBottom ? Math.min(rr, h) : 0, w = bw;
+      return `<path fill="${color}" d="M${x} ${y0 + rt} Q${x} ${y0} ${x + rt} ${y0} L${x + w - rt} ${y0} Q${x + w} ${y0} ${x + w} ${y0 + rt} L${x + w} ${y1 - rb} Q${x + w} ${y1} ${x + w - rb} ${y1} L${x + rb} ${y1} Q${x} ${y1} ${x} ${y1 - rb} Z"/>`;
+    }
+    rows.forEach((r, i) => {
+      const x = xc(i) - bw / 2;
+      let base = 0;
+      const parts = spec.pos.map(p => ({ v: Math.max(0, p.get(r)), c: p.color })).filter(p => p.v > 0);
+      parts.forEach((p, k) => {
+        const yTop = y(base + p.v), yBot = y(base);
+        const gapTop = k < parts.length - 1 ? 1 : 0, gapBot = k > 0 ? 1 : 0;   // 2 px зазор между частями
+        g += seg(x, yTop + gapTop, yBot - gapBot, p.c, k === parts.length - 1, false);
+        base += p.v;
+      });
+      if (spec.neg) {
+        const v = Math.min(0, spec.neg.get(r));
+        if (v < 0) g += seg(x, y(0) + 1, y(v), spec.neg.color, false, true);
+      }
+    });
+    g += `<rect class="hl" x="0" y="${Tp}" width="${slot}" height="${H - Tp - B}" fill="rgba(255,255,255,.06)" visibility="hidden"/>`;
+    g += `<rect class="hit" x="${L}" y="${Tp}" width="${W - L - R}" height="${H - Tp - B}" fill="transparent"/>`;
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${spec.aria}">${g}</svg><div class="tip" hidden></div>`;
+    const svg = host.querySelector("svg"), tip = host.querySelector(".tip"), hl = svg.querySelector(".hl"), hit = svg.querySelector(".hit");
+    hit.addEventListener("pointermove", ev => {
+      const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      const pp = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const i = Math.max(0, Math.min(n - 1, Math.floor((pp.x - L) / slot)));
+      const r = rows[i];
+      hl.setAttribute("x", L + slot * i); hl.setAttribute("visibility", "visible");
+      tip.innerHTML = `<b>${r.label} · месяц ${i + 1}</b>` + spec.tip.map(s => `<div><span>${s.color ? `<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${s.color};margin-right:6px;vertical-align:-1px"></i>` : ""}${s.name}</span><span>${s.fmt(s.get(r))}</span></div>`).join("");
+      tip.hidden = false;
+      const box = host.getBoundingClientRect(), px = (xc(i) / W) * box.width;
+      tip.style.left = Math.min(box.width - tip.offsetWidth, Math.max(0, px + 12)) + "px";
+      tip.style.top = "8px";
+    });
+    hit.addEventListener("pointerleave", () => { tip.hidden = true; hl.setAttribute("visibility", "hidden"); });
+  }
+
   /* ————— вывод ————— */
   function update() {
     const R = compute(S);
@@ -663,8 +862,10 @@
     ].map(([k, v]) => `<div class="item"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
 
     const ltvCac = R.ltv != null && R.cac ? R.ltv / R.cac : null;
+    renderCountries();
     $("kpis").innerHTML = [
       { k: "Чистая прибыль за 2 года", v: `<span class="${cls(R.net)}">${big(R.net)}</span>`, n: `за 24-й месяц: ${big(last.net)}`, main: true },
+      { k: "Владельцу за 2 года", v: `<span class="${cls(R.ownerNet)}">${big(R.ownerNet)}</span>`, n: `после налога при выводе прибыли ${nf1.format(S.dividendTax)} %` },
       { k: "Выручка за 2 года", v: big(R.revenue), n: `в 24-м месяце: ${big(last.revenue)}` },
       { k: "Клиентов в 24-м месяце", v: nf0.format(Math.round(last.total)), n: `средний чек ${rub(R.arpu)}` },
       { k: "Первый месяц в плюсе", v: R.firstPlus >= 0 ? R.rows[R.firstPlus].label : "—", n: firstPlus },
@@ -673,22 +874,37 @@
         n: R.cac ? `цена привлечения ${rub(R.cac)}${ltvCac ? ` · окупает рекламу в ${nf1.format(ltvCac)} раза` : ""}` : "реклама выключена — цена привлечения не считается" }
     ].map(t => `<div class="kpi${t.main ? " main" : ""}"><div class="k">${t.k}</div><div class="v">${t.v}</div><div class="n">${t.n}</div></div>`).join("");
 
-    lineChart($("chartMoney"), R.rows, [
-      { name: "Выручка", color: "#3987e5", get: r => r.revenue },
-      { name: "Все расходы", color: "#ff3b52", get: r => r.costs },
-      { name: "Чистая прибыль", color: "#199e70", get: r => r.net }
-    ], { fmt: shortMoney, tipFmt: rub, aria: "Выручка, расходы и чистая прибыль по месяцам" });
-    lineChart($("chartClients"), R.rows, [
-      { name: "Клиентов", color: "#9085e9", get: r => r.total }
-    ], { w: 420, h: 300, left: 40, right: 44, endLabel: true, fmt: v => nf0.format(Math.round(v)), tipFmt: v => nf1.format(v), aria: "Клиентов на конец месяца" });
+    barChart($("chartMoney"), R.rows, {
+      pos: [
+        { color: "#ff3b52", get: r => Math.min(r.costs, r.revenue) },
+        { color: "#199e70", get: r => Math.max(0, r.net) }
+      ],
+      neg: { color: "#9085e9", get: r => Math.min(0, r.net) },
+      fmt: shortMoney, aria: "Выручка по месяцам: расходы и чистая прибыль",
+      tip: [
+        { name: "Выручка", get: r => r.revenue, fmt: rub },
+        { name: "Все расходы", color: "#ff3b52", get: r => r.costs, fmt: rub },
+        { name: "Чистая прибыль", color: "#199e70", get: r => r.net, fmt: rub }
+      ]
+    });
+    barChart($("chartClients"), R.rows, {
+      pos: [{ color: "#3987e5", get: r => r.total }],
+      w: 420, h: 300, left: 40, fmt: v => nf0.format(Math.round(v)), aria: "Клиентов на конец месяца",
+      tip: [
+        { name: "Клиентов", color: "#3987e5", get: r => r.total, fmt: v => nf1.format(v) },
+        { name: "Новых за месяц", get: r => r.newOrg + r.newRef + r.newPaid + r.newPartner, fmt: v => nf1.format(v) },
+        { name: "Ушло", get: r => r.churned, fmt: v => nf1.format(v) }
+      ]
+    });
 
-    const head = ["Месяц", "Клиентов", "Новых без рекламы", "Новых из рекламы", "Ушло", "Выручка", "НДС и комиссии",
-      "Публикация", "Claude и хранение", "Сервер", "Команда и прочее", "Реклама", "Налог компании", "Чистая прибыль", "Накоплено"];
+    const head = ["Месяц", "Клиентов", "Новых без рекламы", "Новых из рекламы", "От партнёров", "Ушло", "Выручка", "НДС и комиссии",
+      "Публикация", "Claude и хранение", "Сервер", "Команда и прочее", "Реклама с реинвестом", "Партнёрам", "Налог компании", "Чистая прибыль", "Накоплено"];
     const body = R.rows.map((r, i) => `<tr${i === 12 ? ' class="year"' : ""}>
       <td>${r.label}</td>
       <td>${nf0.format(Math.round(r.total))}</td>
       <td>${nf1.format(r.newOrg + r.newRef)}</td>
       <td>${nf1.format(r.newPaid)}</td>
+      <td>${nf1.format(r.newPartner)}</td>
       <td>${nf1.format(r.churned)}</td>
       <td>${nf0.format(Math.round(r.revenue))}</td>
       <td>${nf0.format(Math.round(r.vatFees))}</td>
@@ -696,7 +912,8 @@
       <td>${nf0.format(Math.round(r.claude + r.storage))}</td>
       <td title="рабочих компьютеров: ${r.workers}">${nf0.format(Math.round(r.server))}</td>
       <td>${nf0.format(Math.round(r.team + r.other))}</td>
-      <td>${nf0.format(Math.round(r.marketing))}</td>
+      <td title="основной бюджет + реинвест ${nf0.format(Math.round(r.reinvest))} ₽">${nf0.format(Math.round(r.marketing))}</td>
+      <td>${nf0.format(Math.round(r.agent))}</td>
       <td>${nf0.format(Math.round(r.tax))}</td>
       <td class="${cls(r.net)}">${signed(r.net)}</td>
       <td class="${cls(r.cum)}">${signed(r.cum)}</td></tr>`).join("");
@@ -704,14 +921,45 @@
     const foot = `<tr><td>Итого</td><td>${nf0.format(Math.round(last.total))}</td>
       <td>${nf1.format(R.rows.reduce((a, r) => a + r.newOrg + r.newRef, 0))}</td>
       <td>${nf1.format(R.rows.reduce((a, r) => a + r.newPaid, 0))}</td>
+      <td>${nf1.format(R.rows.reduce((a, r) => a + r.newPartner, 0))}</td>
       <td>${nf1.format(R.rows.reduce((a, r) => a + r.churned, 0))}</td>
       <td>${tot("revenue")}</td><td>${tot("vatFees")}</td><td>${tot("publishing")}</td>
       <td>${nf0.format(Math.round(R.rows.reduce((a, r) => a + r.claude + r.storage, 0)))}</td>
       <td>${tot("server")}</td><td>${nf0.format(Math.round(R.rows.reduce((a, r) => a + r.team + r.other, 0)))}</td>
-      <td>${tot("marketing")}</td><td>${tot("tax")}</td>
+      <td>${tot("marketing")}</td><td>${tot("agent")}</td><td>${tot("tax")}</td>
       <td class="${cls(R.net)}">${signed(R.net)}</td><td class="${cls(last.cum)}">${signed(last.cum)}</td></tr>`;
     $("table").innerHTML = `<thead><tr>${head.map(h => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot>`;
   }
+
+  function renderCountries() {
+    const codes = ["armenia", "uae"];
+    const calc = codes.map(c => { const s = clone(S); PRESET_KEYS.forEach(k => { if (k in PRESETS[c]) s[k] = PRESETS[c][k]; }); return compute(s); });
+    const P = codes.map(c => PRESETS[c]);
+    const pct = v => nf1.format(v) + " %";
+    const rows = [
+      ["Чистая прибыль за 2 года", calc.map(r => `<span class="${cls(r.net)}">${big(r.net)}</span>`)],
+      ["Владельцу после вывода", calc.map(r => `<span class="${cls(r.ownerNet)}">${big(r.ownerNet)}</span>`)],
+      ["Налог компании", P.map(p => pct(p.taxRate) + (p.taxBase === "revenue" ? " с выручки" : " с прибыли"))],
+      ["НДС страны компании", P.map(p => pct(p.localVat))],
+      ["Налог на дивиденды", P.map(p => pct(p.dividendTax))],
+      ["Потери на валюте", P.map(p => pct(p.conversion))],
+      ["Главный компьютер", P.map(p => rub(p.mainSmall) + "/мес")],
+      ["Рабочий компьютер", P.map(p => rub(p.workerPrice) + "/мес")],
+      ["Бухгалтерия", P.map(p => rub(p.accounting) + "/мес")],
+      ["Лицензия и обслуживание", P.map(p => rub(p.companyYearly) + "/год")],
+      ["Открытие компании", P.map(p => rub(p.launchOnce))]
+    ].concat(COUNTRY_ROWS);
+    const cur = S.country;
+    $("countries").innerHTML = `<thead><tr><th scope="col"></th>${P.map((p, i) => `<th scope="col">${p.name}${cur === codes[i] ? " · выбрана" : ""}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(([k, v]) => `<tr><td>${k}</td>${v.map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}
+      <tr><td></td>${codes.map(c => `<td><button type="button" data-country="${c}"${cur === c ? " disabled" : ""}>Считать для ${PRESETS[c].name === "ОАЭ" ? "ОАЭ" : "Армении"}</button></td>`).join("")}</tr></tbody>`;
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest && e.target.closest("button[data-country]");
+    if (!b) return;
+    S.country = b.dataset.country; applyPreset(S.country); save(); renderParams(); update();
+    toast("Считаем для: " + PRESETS[S.country].name);
+  });
 
   /* ————— кнопки ————— */
   function toast(t) { $("toast").textContent = t; setTimeout(() => { $("toast").textContent = ""; }, 3500); }
@@ -734,6 +982,9 @@
     } catch (e) { toast("Не получилось прочитать настройки — вставьте текст целиком"); }
   });
 
+  // для автоматической проверки связей полей (на работу страницы не влияет)
+  window.__kzModel = { compute, DEFAULTS, PRESETS, PRESET_KEYS, clone, merge, migrateV1 };
+  if (window.__KZ_NO_UI) return;
   renderParams();
   update();
 })();
