@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Финмодель Контент-завода</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Onest:wght@400;500;600&display=swap">
+<style>
+  /* Фирменный стиль «Контент-завода» (брендбук, раздел 10): тёмный фон,
+     один красный акцент, Oswald для заголовков и цифр, Onest для текста.
+     Страница сознательно в одной тёмной теме — как сайт завода. */
+  :root {
+    color-scheme: dark;
+    --bg: #0B0D0F;
+    --card: #0F1214;
+    --card-2: #161A1D;
+    --line: rgba(255,255,255,.12);
+    --line-strong: rgba(255,255,255,.22);
+    --ink: #FFFFFF;
+    --ink-2: rgba(255,255,255,.72);
+    --ink-3: rgba(255,255,255,.52);
+    --red: #E4102B;
+    --red-soft: #FF3B52;
+    --ok: #3ecf8e;
+    --bad: #ff6b7d;
+    /* серии графика — проверены валидатором на тёмном фоне #0F1214 */
+    --s-revenue: #3987e5;
+    --s-costs: #ff3b52;
+    --s-profit: #199e70;
+    --s-clients: #9085e9;
+    --display: "Oswald", Impact, "Arial Narrow", Arial, sans-serif;
+    --text: "Onest", -apple-system, "Segoe UI", Arial, sans-serif;
+    --r-card: 20px;
+    --r-ctl: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 15px/1.5 var(--text);
+    padding-inline: 16px;
+    padding-block: 0 64px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; }
+  a { color: var(--red-soft); }
+
+  /* ——— шапка ——— */
+  .hero {
+    position: relative;
+    padding-block: 40px 28px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: -40% -10% auto auto;
+    width: 520px; height: 520px; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(228,16,43,.35), transparent);
+  }
+  .eyebrow {
+    font: 500 12px/1 var(--display); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--red-soft); display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 56px; height: 4px; background: var(--red); border-radius: 2px; }
+  h1 {
+    font: 600 clamp(34px, 6vw, 60px)/1.04 var(--display); margin: 14px 0 12px;
+    text-wrap: balance; position: relative;
+  }
+  h1 em { font-style: normal; color: var(--red-soft); }
+  .lead { color: var(--ink-2); max-width: 64ch; margin: 0; position: relative; }
+  .lead strong { color: var(--ink); font-weight: 600; }
+
+  /* ——— липкая сводка ——— */
+  .sticky {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: rgba(11,13,15,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    margin-inline: -16px; padding: 10px 16px;
+  }
+  .sticky .row { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: baseline; }
+  .sticky .k { font: 500 11px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .sticky .v { font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
+  .sticky .item { display: flex; gap: 8px; align-items: baseline; }
+
+  /* ——— сводные плитки ——— */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-block: 22px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); padding: 16px 18px; }
+  .kpi .k { font: 500 11px/1.2 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .kpi .v { font: 600 clamp(22px, 2.2vw, 28px)/1.1 var(--display); margin-top: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kpi .n { color: var(--ink-2); font-size: 13px; margin-top: 4px; }
+  .kpi.main { border-color: rgba(228,16,43,.55); background: linear-gradient(180deg, rgba(228,16,43,.10), var(--card) 70%); }
+  .pos { color: var(--ok); } .neg { color: var(--bad); }
+
+  /* ——— разделы ——— */
+  section { margin-block: 30px; }
+  h2 {
+    font: 600 26px/1.1 var(--display); margin: 0 0 6px; display: flex; align-items: center; gap: 12px;
+  }
+  h2::before { content: ""; width: 40px; height: 4px; background: var(--red); border-radius: 2px; flex: none; }
+  .sub { color: var(--ink-2); margin: 0 0 16px; max-width: 70ch; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); padding: 18px; }
+
+  /* ——— графики ——— */
+  .charts { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  @media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+  .chart-title { font: 600 16px/1.2 var(--display); letter-spacing: .02em; margin: 0 0 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink-2); font-size: 13px; margin-bottom: 8px; }
+  .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .tip {
+    position: absolute; pointer-events: none; background: var(--card-2); border: 1px solid var(--line-strong);
+    border-radius: 10px; padding: 8px 10px; font-size: 12.5px; min-width: 170px; z-index: 5;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45); font-variant-numeric: tabular-nums;
+  }
+  .chart .tip b { font: 600 13px/1.3 var(--display); letter-spacing: .04em; display: block; margin-bottom: 4px; }
+  .chart .tip div { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-2); }
+  .chart .tip div span:last-child { color: var(--ink); }
+
+  /* ——— параметры ——— */
+  .params { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; align-items: start; }
+  details.group { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card); }
+  details.group > summary {
+    list-style: none; cursor: pointer; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  }
+  details.group > summary::-webkit-details-marker { display: none; }
+  details.group > summary h3 { font: 600 17px/1.2 var(--display); margin: 0; letter-spacing: .02em; }
+  details.group > summary .hint { color: var(--ink-3); font-size: 12.5px; }
+  details.group > summary::after {
+    content: "+"; font: 500 22px/1 var(--display); color: var(--red-soft); flex: none;
+  }
+  details.group[open] > summary::after { content: "–"; }
+  .gbody { padding: 0 18px 18px; display: grid; gap: 12px; }
+  .field { display: grid; grid-template-columns: 1fr minmax(150px, 180px); gap: 4px 12px; align-items: center; }
+  .field label { color: var(--ink); font-size: 14px; }
+  .field .note { grid-column: 1 / -1; color: var(--ink-3); font-size: 12.5px; line-height: 1.4; }
+  .inp { display: flex; align-items: center; gap: 6px; }
+  input[type=number], input[type=text], select, textarea {
+    width: 100%; background: var(--card-2); color: var(--ink); border: 1px solid var(--line-strong);
+    border-radius: var(--r-ctl); padding: 8px 10px; font: 500 14px/1.2 var(--text); font-variant-numeric: tabular-nums;
+  }
+  input[type=number] { text-align: right; }
+  .unit { color: var(--ink-3); font-size: 12.5px; min-width: 26px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--red-soft); outline-offset: 2px;
+  }
+  .mini { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .mini th { font: 500 11px/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); text-align: left; padding: 6px 4px; }
+  .mini td { padding: 4px; }
+  .mini td:first-child { color: var(--ink); min-width: 150px; }
+  .mini input { padding: 6px 8px; min-width: 96px; }
+  details.group.wide { grid-column: 1 / -1; }
+  .scroll { overflow-x: auto; }
+  .switch { display: flex; align-items: center; gap: 10px; }
+  .switch input { width: 18px; height: 18px; accent-color: var(--red); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  button {
+    font: 600 13px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; cursor: pointer;
+    border-radius: var(--r-ctl); padding: 12px 16px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink);
+  }
+  button.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  button:hover { border-color: var(--red-soft); }
+  .toast { color: var(--ok); font-size: 13px; align-self: center; }
+  .paste { display: grid; gap: 8px; margin-top: 10px; }
+  .paste textarea { min-height: 70px; font: 400 12px/1.4 ui-monospace, Menlo, monospace; }
+
+  /* ——— таблица ——— */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-card); background: var(--card); }
+  table.months { border-collapse: collapse; width: 100%; min-width: 1080px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .months th, .months td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .months thead th {
+    font: 500 11px/1.25 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+    position: sticky; top: 0; background: var(--card-2); white-space: normal; vertical-align: bottom;
+  }
+  .months th:first-child, .months td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); z-index: 1; }
+  .months thead th:first-child { background: var(--card-2); z-index: 2; }
+  .months tbody tr:hover td { background: #13171a; }
+  .months tr.year td { border-top: 2px solid rgba(228,16,43,.55); }
+  .months tfoot td { font-weight: 600; background: var(--card-2); border-bottom: 0; }
+  .months tfoot td:first-child { background: var(--card-2); }
+
+  /* ——— пояснения ——— */
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .notes ul { margin: 0; padding-left: 18px; color: var(--ink-2); display: grid; gap: 6px; }
+  .notes li strong { color: var(--ink); font-weight: 600; }
+  .tag { display: inline-block; font: 600 10.5px/1 var(--display); letter-spacing: .12em; text-transform: uppercase;
+         padding: 4px 7px; border-radius: 6px; background: rgba(228,16,43,.16); color: var(--red-soft); margin-left: 6px; vertical-align: 2px; }
+  footer { color: var(--ink-3); font-size: 12.5px; margin-top: 36px; border-top: 1px solid var(--line); padding-top: 16px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Контент-завод 2.0 · подписка</div>
+    <h1>Финмодель <em>Контент-завода</em></h1>
+    <p class="lead">Выручка, расходы и прибыль по месяцам на два года вперёд. Меняйте цену подписки, приток клиентов, рекламу, сервер и налоги — всё пересчитывается сразу. Исходные числа — из <strong>сметы и финмодели 25.09.2026</strong>: сервер в Алматы, публикация во все соцсети внутри подписки, первый месяц — ноябрь 2026.</p>
+  </header>
+</div>
+
+<div class="sticky" aria-live="polite">
+  <div class="row" id="stickyRow"></div>
+</div>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <section aria-labelledby="h-charts">
+    <h2 id="h-charts">Два года по месяцам</h2>
+    <p class="sub">Выручка равна расходам плюс прибыль: в расходы входят налоги, комиссия оплаты, сервер, публикация, Claude, команда и реклама. Наведите на график, чтобы увидеть месяц.</p>
+    <div class="charts">
+      <div class="card">
+        <p class="chart-title">Выручка, расходы и чистая прибыль, ₽ в месяц</p>
+        <div class="legend">
+          <span><i style="background:var(--s-revenue)"></i>Выручка</span>
+          <span><i style="background:var(--s-costs)"></i>Все расходы</span>
+          <span><i style="background:var(--s-profit)"></i>Чистая прибыль</span>
+        </div>
+        <div class="chart" id="chartMoney"></div>
+      </div>
+      <div class="card">
+        <p class="chart-title">Клиентов на конец месяца</p>
+        <div class="legend"><span>все тарифы вместе</span></div>
+        <div class="chart" id="chartClients"></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-params">
+    <h2 id="h-params">Параметры</h2>
+    <p class="sub">Всё, что можно менять. Поля помечены: <span class="tag">замер</span> — число из наших расчётов или цены поставщика, <span class="tag">допущение</span> — оценка, замените своей. Ваши настройки запоминаются в этом браузере.</p>
+    <div class="params" id="params"></div>
+    <div class="actions">
+      <button type="button" class="primary" id="btnCopy">Скопировать настройки</button>
+      <button type="button" id="btnPasteToggle">Вставить настройки</button>
+      <button type="button" id="btnReset">Вернуть исходные</button>
+      <span class="toast" id="toast" role="status"></span>
+    </div>
+    <div class="paste" id="pasteBox" hidden>
+      <label for="pasteArea">Вставьте сюда текст настроек, который вам прислали, и нажмите «Применить».</label>
+      <textarea id="pasteArea" spellcheck="false"></textarea>
+      <div class="actions" style="margin-top:0"><button type="button" class="primary" id="btnApply">Применить</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-table">
+    <h2 id="h-table">Таблица по месяцам</h2>
+    <p class="sub">Все суммы — в рублях, с учётом дробных клиентов (в среднем), клиенты округлены. Красная черта — начало второго года.</p>
+    <div class="table-wrap"><table class="months" id="table"></table></div>
+  </section>
+
+  <section aria-labelledby="h-extra">
+    <h2 id="h-extra">Что ещё заложено в модель</h2>
+    <p class="sub">Сверх того, что просили, — параметры, которые заметно двигают прибыль подписочного сервиса.</p>
+    <div class="notes">
+      <div class="card"><ul>
+        <li><strong>Три тарифа</strong> со своей ценой, стартовой базой, притоком и оттоком — выручку делают разные клиенты по-разному.</li>
+        <li><strong>Отток клиентов</strong> в процентах в месяц — главный враг подписки: при 12 % половина клиентов уходит за полгода.</li>
+        <li><strong>Рост органического притока</strong> — сарафан и соцсети Валерии со временем приводят больше людей.</li>
+        <li><strong>Скидка на первый месяц</strong> и <strong>ежегодная индексация цены</strong>.</li>
+        <li><strong>Реферальная программа</strong>: доля клиентов, которые приводят друга, и бонус за каждого.</li>
+      </ul></div>
+      <div class="card"><ul>
+        <li><strong>Сервер ступенями</strong>: главный компьютер дорожает после порога клиентов, рабочие компьютеры добавляются по мере нагрузки, запасной главный — по желанию.</li>
+        <li><strong>Публикация по настоящей сетке цен Postmypost</strong>: за аккаунт дешевле, чем больше клиентов.</li>
+        <li><strong>Claude в долларах</strong> с курсом и наценкой за оплату — видно, как курс бьёт по себестоимости; плюс разовая сборка книги смыслов каждому новому клиенту.</li>
+        <li><strong>Команда</strong>: сотрудник поддержки нанимается с заданного числа клиентов; зарплата владельцев — отдельной строкой.</li>
+      </ul></div>
+      <div class="card"><ul>
+        <li><strong>НДС 18,03 %</strong> для иностранной компании, продающей электронные услуги россиянам (НК РФ ст. 174.2).</li>
+        <li><strong>Налог компании</strong> — с прибыли или с выручки, ставку задаёте сами.</li>
+        <li><strong>Комиссия ЮKassa, конвертация валюты, возвраты</strong> — всё, что теряется между оплатой клиента и нашим счётом.</li>
+        <li><strong>Разовые расходы на запуск</strong> и <strong>месяц окупаемости</strong>, <strong>ценность клиента за всё время (LTV)</strong> и <strong>стоимость привлечения (CAC)</strong>.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <footer>
+    Модель — расчёт по допущениям, а не обещание. Исходные данные: смета сервера (дорожка «сервер», 25.09.2026, Serverspace Алматы), финмодель ред. 2 (рынок РФ и Европы, три тарифа), замер Claude (137–281 ₽ на клиента в месяц). Налоги не проверены бухгалтером.
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ————— исходные значения ————— */
+  const DEFAULTS = {
+    months: 24,
+    tariffs: [
+      { id: "start", name: "Старт",    price: 9900,  base: 3, newPer: 5,   churn: 12, hours: 2.9,  claudeUsd: 1.88, storage: 26 },
+      { id: "main",  name: "Основной", price: 19900, base: 2, newPer: 3,   churn: 8,  hours: 8.9,  claudeUsd: 2.99, storage: 66 },
+      { id: "prem",  name: "Премиум",  price: 39900, base: 1, newPer: 1.5, churn: 6,  hours: 28.8, claudeUsd: 4.93, storage: 132 }
+    ],
+    organicGrowth: 0,        // % в месяц к органическому притоку
+    firstMonthDiscount: 0,   // %
+    priceIndex: 0,           // % в год
+    refRate: 0,              // % клиентов в месяц приводят друга
+    refBonus: 0,             // ₽ за каждого приведённого
+    channels: [
+      { id: "tgads",   name: "Telegram Ads",               budget: 0, cac: 12000 },
+      { id: "seeds",   name: "Посевы в Telegram-каналах",  budget: 0, cac: 8000 },
+      { id: "vk",      name: "VK Реклама",                 budget: 0, cac: 10000 },
+      { id: "direct",  name: "Яндекс Директ",              budget: 0, cac: 14000 },
+      { id: "bloggers",name: "Блогеры и интеграции",       budget: 0, cac: 15000 },
+      { id: "webinar", name: "Эфиры и вебинары",           budget: 0, cac: 6000 },
+      { id: "other",   name: "Прочее",                     budget: 0, cac: 10000 }
+    ],
+    vat: 18.03,              // %
+    acquiring: 4.64,         // %
+    conversion: 0,           // %
+    refunds: 0,              // %
+    taxBase: "profit",       // profit | revenue
+    taxRate: 20,             // %
+    mainSmall: 9098,
+    mainLarge: 14719,
+    mainThreshold: 50,
+    workerPrice: 9844,
+    workerHours: 360,
+    backupOn: false,
+    backupFrom: 50,
+    networks: 6,
+    pubOverride: 0,          // ₽ за аккаунт; 0 — сетка Postmypost
+    usdRate: 84.91,
+    claudeMarkup: 15,        // %
+    onboardUsd: 3,
+    supportSalary: 71000,
+    supportFrom: 30,
+    supportPer: 40,
+    ownersSalary: 0,
+    accounting: 8000,
+    otherFixed: 5000,
+    launchOnce: 5400,
+    otherOnce: 0
+  };
+
+  // Postmypost «Стандартный», ₽/мес за N аккаунтов (снято 25.09.2026)
+  const PMP = [[5,1190],[10,1990],[15,2290],[20,2690],[25,3390],[30,3990],[40,5190],[50,6290],[60,7390],
+    [100,11190],[150,16690],[200,22290],[250,27890],[300,33390],[400,44590],[500,55690],[750,83490],
+    [1000,111290],[1500,166990],[2000,222590],[3000,333890],[4000,445190]];
+  function postmypost(acc) {
+    if (acc <= 0) return 0;
+    for (let i = 0; i < PMP.length - 1; i++) {
+      const [a0, p0] = PMP[i], [a1, p1] = PMP[i + 1];
+      if (acc <= a1) return acc <= a0 ? p0 : p0 + (p1 - p0) * (acc - a0) / (a1 - a0);
+    }
+    const [a0, p0] = PMP[PMP.length - 2], [a1, p1] = PMP[PMP.length - 1];
+    return p1 + (p1 - p0) / (a1 - a0) * (acc - a1);
+  }
+
+  const MONTHS_RU = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+  function monthLabel(i) {           // i = 0 → ноябрь 2026
+    const m = (10 + i) % 12, y = 2026 + Math.floor((10 + i) / 12);
+    return MONTHS_RU[m] + " " + String(y).slice(2);
+  }
+
+  /* ————— состояние ————— */
+  const KEY = "kz-finmodel-v1";
+  const clone = o => JSON.parse(JSON.stringify(o));
+  let S = clone(DEFAULTS);
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved) S = merge(clone(DEFAULTS), JSON.parse(saved));
+  } catch (e) { /* без памяти браузера — просто исходные */ }
+
+  function merge(base, over) {
+    if (!over || typeof over !== "object") return base;
+    for (const k of Object.keys(base)) {
+      if (!(k in over)) continue;
+      if (Array.isArray(base[k]) && Array.isArray(over[k])) {
+        base[k] = base[k].map((item, i) => (over[k][i] && typeof item === "object") ? merge(item, over[k][i]) : item);
+      } else if (typeof base[k] === typeof over[k]) {
+        base[k] = over[k];
+      }
+    }
+    return base;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  /* ————— расчёт ————— */
+  function compute(s) {
+    const n = s.months;
+    const T = s.tariffs;
+    const newSum = T.reduce((a, t) => a + t.newPer, 0) || 1;
+    const mix = T.map(t => t.newPer / newSum);            // доли тарифов в новых продажах
+    const paidPerMonth = s.channels.reduce((a, c) => a + (c.cac > 0 ? c.budget / c.cac : 0), 0);
+    const marketing = s.channels.reduce((a, c) => a + c.budget, 0);
+    const claudeRub = s.usdRate * (1 + s.claudeMarkup / 100);
+
+    let clients = T.map(() => 0);
+    let cum = -(s.launchOnce + s.otherOnce);  // разовые — до первого месяца
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const growth = Math.pow(1 + s.organicGrowth / 100, Math.max(0, i - 1));
+      const idx = Math.pow(1 + s.priceIndex / 100, Math.floor(i / 12));
+      const prevTotal = clients.reduce((a, b) => a + b, 0);
+      const refNew = prevTotal * s.refRate / 100;
+      let churned = 0, newOrg = 0, newPaid = 0, newRef = 0, revenue = 0, claude = 0, storage = 0, hours = 0;
+      clients = clients.map((c, k) => {
+        const t = T[k];
+        const out = c * t.churn / 100;
+        const org = i === 0 ? t.base : t.newPer * growth;
+        const paid = paidPerMonth * mix[k];
+        const ref = refNew * mix[k];
+        const nw = org + paid + ref;
+        const end = c - out + nw;
+        churned += out; newOrg += org; newPaid += paid; newRef += ref;
+        const price = t.price * idx;
+        revenue += (end - nw) * price + nw * price * (1 - s.firstMonthDiscount / 100);
+        claude += end * t.claudeUsd * claudeRub + nw * s.onboardUsd * claudeRub;
+        storage += end * t.storage;
+        hours += end * t.hours;
+        return end;
+      });
+      const total = clients.reduce((a, b) => a + b, 0);
+      const accounts = total * s.networks;
+      const publishing = s.pubOverride > 0 ? accounts * s.pubOverride : postmypost(accounts);
+      const refCost = newRef * s.refBonus;
+
+      const vat = revenue * s.vat / 100;
+      const fees = revenue * (s.acquiring + s.conversion + s.refunds) / 100;
+      const variable = claude + storage + publishing + refCost;
+
+      const workers = Math.max(1, Math.ceil(hours / Math.max(1, s.workerHours) - 1e-9));
+      const main = total > s.mainThreshold ? s.mainLarge : s.mainSmall;
+      const backup = s.backupOn && total >= s.backupFrom ? main : 0;
+      const server = main + backup + workers * s.workerPrice;
+      const support = total >= s.supportFrom && s.supportFrom > 0
+        ? Math.ceil(total / Math.max(1, s.supportPer) - 1e-9) * s.supportSalary : 0;
+      const team = support + s.ownersSalary;
+      const fixed = server + team + s.accounting + s.otherFixed;
+
+      const pbt = revenue - vat - fees - variable - fixed - marketing;
+      const tax = s.taxBase === "revenue" ? revenue * s.taxRate / 100 : Math.max(0, pbt) * s.taxRate / 100;
+      const net = pbt - tax;
+      cum += net;
+      rows.push({
+        label: monthLabel(i), i, total, newOrg, newPaid, newRef, churned, revenue,
+        vatFees: vat + fees, vat, fees, claude, storage, publishing, variable, server, workers, team,
+        other: s.accounting + s.otherFixed, marketing, tax, net, cum,
+        costs: revenue - net
+      });
+    }
+    // сводные
+    const sum = k => rows.reduce((a, r) => a + r[k], 0);
+    const last = rows[rows.length - 1];
+    const firstPlus = rows.findIndex(r => r.net > 0);
+    const payback = rows.findIndex(r => r.cum >= 0);
+    const avgChurn = T.reduce((a, t, k) => a + t.churn * mix[k], 0) / 100;
+    const lastMargin = last.total > 0 ? (last.revenue - last.vatFees - last.variable) / last.total : 0;
+    const ltv = avgChurn > 0 ? lastMargin / avgChurn : null;
+    const cac = paidPerMonth > 0 ? marketing / paidPerMonth : null;
+    return {
+      rows, last,
+      revenue: sum("revenue"), net: sum("net"), marketing: sum("marketing"), tax: sum("tax"), vatFees: sum("vatFees"),
+      firstPlus, payback, ltv, cac, arpu: last.total > 0 ? last.revenue / last.total : 0,
+      paidPerMonth
+    };
+  }
+
+  /* ————— форматирование ————— */
+  const nf0 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
+  const nf1 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 });
+  const rub = v => nf0.format(Math.round(v)) + " ₽";
+  function big(v) {
+    const a = Math.abs(v), sign = v < 0 ? "−" : "";
+    if (a >= 1e6) return sign + nf1.format(a / 1e6) + " млн ₽";
+    if (a >= 1e3) return sign + nf0.format(Math.round(a / 1e3)) + " тыс ₽";
+    return sign + nf0.format(Math.round(a)) + " ₽";
+  }
+  const signed = v => (v < 0 ? "−" : "") + nf0.format(Math.abs(Math.round(v)));
+  const cls = v => v < 0 ? "neg" : "pos";
+
+  /* ————— параметры: разметка ————— */
+  const FIELDS = [
+    { title: "Подписка и тарифы", hint: "цены, база, приток, отток", open: true, tariffs: true, fields: [
+      { k: "firstMonthDiscount", label: "Скидка на первый месяц", unit: "%", step: 5, tag: "допущение" },
+      { k: "priceIndex", label: "Индексация цены раз в год", unit: "%", step: 1, tag: "допущение" }
+    ]},
+    { title: "Клиенты без рекламы", hint: "сарафан, соцсети, рефералы", fields: [
+      { k: "organicGrowth", label: "Рост органического притока", unit: "% /мес", step: 1, tag: "допущение",
+        note: "На сколько процентов каждый месяц растёт приток из соцсетей Валерии и сарафана." },
+      { k: "refRate", label: "Приводят друга", unit: "% /мес", step: 0.5, tag: "допущение",
+        note: "Доля клиентов, которые в месяц приводят одного нового." },
+      { k: "refBonus", label: "Бонус за приведённого", unit: "₽", step: 500, tag: "допущение" }
+    ]},
+    { title: "Реклама", hint: "бюджет и цена клиента по каналам", channels: true, open: true },
+    { title: "Налоги и комиссии", hint: "НДС, налог компании, оплата", fields: [
+      { k: "vat", label: "НДС России (электронные услуги)", unit: "%", step: 0.01, tag: "замер",
+        note: "НК РФ ст. 174.2: иностранная компания, продающая электронные услуги россиянам. Цена подписки включает НДС." },
+      { k: "taxBase", label: "Налог компании считается", select: [["profit", "с прибыли"], ["revenue", "с выручки"]] },
+      { k: "taxRate", label: "Ставка налога компании", unit: "%", step: 1, tag: "допущение",
+        note: "Общий налог на прибыль в Казахстане — 20 %. Режим компании не выбран — уточнить у бухгалтера." },
+      { k: "acquiring", label: "Комиссия ЮKassa", unit: "%", step: 0.1, tag: "замер",
+        note: "2,8 % + 1 % за чеки + НДС на комиссию. Для иностранной компании тарифы те же." },
+      { k: "conversion", label: "Конвертация валюты", unit: "%", step: 0.5, tag: "допущение",
+        note: "+2 %, если банк компании не принимает рубли и ЮKassa зачисляет в валюте." },
+      { k: "refunds", label: "Возвраты", unit: "% выручки", step: 0.5, tag: "допущение" }
+    ]},
+    { title: "Сервер", hint: "Serverspace, Алматы", fields: [
+      { k: "mainSmall", label: "Главный компьютер", unit: "₽/мес", step: 100, tag: "замер" },
+      { k: "mainThreshold", label: "Порог клиентов для мощного главного", unit: "клиентов", step: 5 },
+      { k: "mainLarge", label: "Мощный главный компьютер", unit: "₽/мес", step: 100, tag: "замер" },
+      { k: "workerPrice", label: "Рабочий компьютер (8 ядер)", unit: "₽/мес", step: 100, tag: "замер" },
+      { k: "workerHours", label: "Полезных часов счёта у рабочего", unit: "ч/мес", step: 10, tag: "допущение",
+        note: "Половина месяца. Рабочие добавляются, когда клиентам не хватает часов." },
+      { k: "backupOn", label: "Запасной главный компьютер", check: true },
+      { k: "backupFrom", label: "Включать запасной с", unit: "клиентов", step: 5 }
+    ]},
+    { title: "Себестоимость клиента", hint: "публикация, Claude, хранение", fields: [
+      { k: "networks", label: "Соцсетей у клиента", unit: "шт", step: 1, tag: "замер",
+        note: "Как у Валерии сейчас: Instagram, YouTube, Telegram, ВК, TikTok, Threads. Postmypost даёт до 20." },
+      { k: "pubOverride", label: "Своя цена публикации за аккаунт", unit: "₽", step: 10,
+        note: "0 — считать по сетке цен Postmypost (дешевле на аккаунт при большом числе клиентов)." },
+      { k: "usdRate", label: "Курс доллара", unit: "₽", step: 0.5, tag: "замер" },
+      { k: "claudeMarkup", label: "Наценка за оплату Claude", unit: "%", step: 1, tag: "допущение" },
+      { k: "onboardUsd", label: "Сборка книги смыслов новому клиенту", unit: "$", step: 0.5, tag: "допущение" }
+    ]},
+    { title: "Команда и постоянные", hint: "поддержка, бухгалтерия, прочее", fields: [
+      { k: "supportSalary", label: "Зарплата сотрудника поддержки", unit: "₽/мес", step: 1000, tag: "замер" },
+      { k: "supportFrom", label: "Нанимать поддержку с", unit: "клиентов", step: 5, note: "0 — не нанимать." },
+      { k: "supportPer", label: "Клиентов на одного сотрудника", unit: "шт", step: 5, tag: "допущение" },
+      { k: "ownersSalary", label: "Зарплата владельцев", unit: "₽/мес", step: 5000 },
+      { k: "accounting", label: "Бухгалтерия компании за границей", unit: "₽/мес", step: 1000, tag: "допущение" },
+      { k: "otherFixed", label: "Прочие сервисы и подписки", unit: "₽/мес", step: 1000, tag: "допущение" },
+      { k: "launchOnce", label: "Регистрация компании (разово)", unit: "₽", step: 500, tag: "замер" },
+      { k: "otherOnce", label: "Прочие разовые на запуск", unit: "₽", step: 5000 }
+    ]}
+  ];
+
+  const $ = id => document.getElementById(id);
+  function numInput(id, value, step, aria) {
+    return `<input type="number" id="${id}" value="${value}" step="${step || 1}" min="0" inputmode="decimal"${aria ? ` aria-label="${aria}"` : ""}>`;
+  }
+  function renderParams() {
+    const html = FIELDS.map((g, gi) => {
+      let body = "";
+      if (g.tariffs) {
+        body += `<div class="scroll"><table class="mini"><thead><tr><th></th>${S.tariffs.map(t => `<th>${t.name}</th>`).join("")}</tr></thead><tbody>` +
+          [["price", "Цена, ₽/мес", 100], ["base", "Стартовая база, клиентов", 1], ["newPer", "Новых в месяц без рекламы", 0.5],
+           ["churn", "Отток, % в месяц", 1], ["hours", "Часов счёта в месяц", 0.1], ["claudeUsd", "Claude, $ в месяц", 0.1], ["storage", "Хранение, ₽/мес", 1]]
+          .map(([k, lbl, st]) => `<tr><td>${lbl}</td>${S.tariffs.map((t, ti) =>
+            `<td>${numInput(`t-${ti}-${k}`, t[k], st, `${t.name}: ${lbl}`)}</td>`).join("")}</tr>`).join("") +
+          `</tbody></table></div><p class="note" style="color:var(--ink-3);font-size:12.5px;margin:0">Цены — рекомендация финмодели по рынку. База, приток и отток — <span class="tag">допущение</span>: подписок ещё не было. Часы, Claude и хранение — <span class="tag">замер</span> при использовании 70 % лимита.</p>`;
+      }
+      if (g.channels) {
+        body += `<div class="scroll"><table class="mini"><thead><tr><th>Канал</th><th>Бюджет, ₽/мес</th><th>Цена клиента, ₽</th></tr></thead><tbody>` +
+          S.channels.map((c, ci) => `<tr><td>${c.name}</td>
+            <td>${numInput(`c-${ci}-budget`, c.budget, 5000, `${c.name}: бюджет в месяц`)}</td>
+            <td>${numInput(`c-${ci}-cac`, c.cac, 500, `${c.name}: цена клиента`)}</td></tr>`).join("") +
+          `</tbody></table></div><p class="note" style="color:var(--ink-3);font-size:12.5px;margin:0">Цена клиента (CAC) — <span class="tag">допущение</span>: сколько рублей рекламы уходит на одного оплатившего подписку. Замените своими цифрами после первых запусков. Новые клиенты из рекламы делятся по тарифам так же, как органические.</p>`;
+      }
+      if (g.fields) body += g.fields.map(f => {
+        const v = S[f.k];
+        let ctl;
+        if (f.select) ctl = `<select id="f-${f.k}">${f.select.map(([val, txt]) => `<option value="${val}"${v === val ? " selected" : ""}>${txt}</option>`).join("")}</select>`;
+        else if (f.check) ctl = `<span class="switch"><input type="checkbox" id="f-${f.k}"${v ? " checked" : ""}><span class="unit">включён</span></span>`;
+        else ctl = `<span class="inp">${numInput("f-" + f.k, v, f.step)}<span class="unit">${f.unit || ""}</span></span>`;
+        return `<div class="field"><label for="f-${f.k}">${f.label}${f.tag ? `<span class="tag">${f.tag}</span>` : ""}</label>${ctl}${f.note ? `<div class="note">${f.note}</div>` : ""}</div>`;
+      }).join("");
+      return `<details class="group${g.tariffs || g.channels ? " wide" : ""}"${g.open ? " open" : ""}><summary><div><h3>${g.title}</h3><div class="hint">${g.hint}</div></div></summary><div class="gbody">${body}</div></details>`;
+    }).join("");
+    $("params").innerHTML = html;
+  }
+
+  function readInput(el) {
+    const id = el.id;
+    let val = el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : parseFloat(String(el.value).replace(",", "."));
+    if (typeof val === "number" && !isFinite(val)) return;
+    if (typeof val === "number" && val < 0) val = 0;
+    let m;
+    if ((m = id.match(/^t-(\d+)-(\w+)$/))) S.tariffs[+m[1]][m[2]] = val;
+    else if ((m = id.match(/^c-(\d+)-(\w+)$/))) S.channels[+m[1]][m[2]] = val;
+    else if ((m = id.match(/^f-(\w+)$/))) S[m[1]] = val;
+    save();
+    update();
+  }
+
+  /* ————— графики (SVG, одна ось) ————— */
+  function niceStep(range, ticks) {
+    const raw = range / ticks, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), f = raw / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  }
+  function shortMoney(v) {
+    const a = Math.abs(v), s = v < 0 ? "−" : "";
+    if (a >= 1e6) return s + nf1.format(a / 1e6) + " млн";
+    if (a >= 1e3) return s + nf0.format(a / 1e3) + " тыс";
+    return s + nf0.format(a);
+  }
+  function lineChart(host, rows, series, opts) {
+    const W = opts.w || 760, H = opts.h || 300, L = opts.left || 64, R = opts.right || 92, Tp = 12, B = 30;
+    const vals = series.flatMap(s => rows.map(r => s.get(r)));
+    let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+    if (hi === lo) hi = lo + 1;
+    const step = niceStep(hi - lo, 5);
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const x = i => L + (W - L - R) * (rows.length === 1 ? 0.5 : i / (rows.length - 1));
+    const y = v => Tp + (H - Tp - B) * (1 - (v - lo) / (hi - lo));
+    let g = "";
+    for (let v = lo; v <= hi + step / 2; v += step) {
+      const yy = y(v).toFixed(1);
+      g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="${v === 0 ? "rgba(255,255,255,.38)" : "rgba(255,255,255,.08)"}" stroke-width="1"/>`;
+      g += `<text x="${L - 8}" y="${yy}" dy="4" text-anchor="end" fill="rgba(255,255,255,.52)" font-size="11">${opts.fmt(v)}</text>`;
+    }
+    rows.forEach((r, i) => {
+      if (i % 3 === 0 || i === rows.length - 1)
+        g += `<text x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle" fill="rgba(255,255,255,.52)" font-size="11">${r.label}</text>`;
+    });
+    // линии и подписи на концах
+    const ends = [];
+    series.forEach(s => {
+      const d = rows.map((r, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(s.get(r)).toFixed(1)).join(" ");
+      g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      const lv = s.get(rows[rows.length - 1]);
+      ends.push({ y: y(lv), s, v: lv });
+    });
+    // разводим подписи, чтобы не наползали
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 14) ends[i].y = ends[i - 1].y + 14;
+    ends.forEach(e => {
+      const cx = x(rows.length - 1);
+      g += `<circle cx="${cx}" cy="${y(e.v)}" r="4" fill="${e.s.color}" stroke="var(--card)" stroke-width="2"/>`;
+      if (series.length > 1 || opts.endLabel)
+        g += `<text x="${cx + 10}" y="${e.y}" dy="4" fill="rgba(255,255,255,.86)" font-size="11.5">${opts.fmt(e.v)}</text>`;
+    });
+    g += `<line class="cross" x1="0" x2="0" y1="${Tp}" y2="${H - B}" stroke="rgba(255,255,255,.35)" stroke-width="1" visibility="hidden"/>`;
+    g += `<rect class="hit" x="${L}" y="${Tp}" width="${W - L - R}" height="${H - Tp - B}" fill="transparent"/>`;
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.aria}">${g}</svg><div class="tip" hidden></div>`;
+    const svg = host.querySelector("svg"), tip = host.querySelector(".tip"), cross = svg.querySelector(".cross"), hit = svg.querySelector(".hit");
+    function move(ev) {
+      const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+      const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+      const i = Math.max(0, Math.min(rows.length - 1, Math.round((p.x - L) / ((W - L - R) / Math.max(1, rows.length - 1)))));
+      const r = rows[i];
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+      tip.innerHTML = `<b>${r.label} · месяц ${i + 1}</b>` + series.map(s => `<div><span><i style="display:inline-block;width:10px;height:3px;background:${s.color};margin-right:6px;vertical-align:middle"></i>${s.name}</span><span>${opts.tipFmt(s.get(r))}</span></div>`).join("");
+      tip.hidden = false;
+      const box = host.getBoundingClientRect(), px = (x(i) / W) * box.width;
+      tip.style.left = Math.min(box.width - tip.offsetWidth, Math.max(0, px + 12)) + "px";
+      tip.style.top = "8px";
+    }
+    hit.addEventListener("pointermove", move);
+    hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
+  }
+
+  /* ————— вывод ————— */
+  function update() {
+    const R = compute(S);
+    const last = R.last;
+    const firstPlus = R.firstPlus >= 0 ? `${R.rows[R.firstPlus].label} (месяц ${R.firstPlus + 1})` : "не выходит за 2 года";
+    const payback = R.payback >= 0 ? `${R.rows[R.payback].label} (месяц ${R.payback + 1})` : "не окупается за 2 года";
+
+    $("stickyRow").innerHTML = [
+      ["Клиентов через 2 года", nf0.format(Math.round(last.total))],
+      ["Выручка за 2 года", big(R.revenue)],
+      ["Чистая прибыль за 2 года", `<span class="${cls(R.net)}">${big(R.net)}</span>`],
+      ["В плюс с", R.firstPlus >= 0 ? R.rows[R.firstPlus].label : "—"]
+    ].map(([k, v]) => `<div class="item"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+
+    const ltvCac = R.ltv != null && R.cac ? R.ltv / R.cac : null;
+    $("kpis").innerHTML = [
+      { k: "Чистая прибыль за 2 года", v: `<span class="${cls(R.net)}">${big(R.net)}</span>`, n: `за 24-й месяц: ${big(last.net)}`, main: true },
+      { k: "Выручка за 2 года", v: big(R.revenue), n: `в 24-м месяце: ${big(last.revenue)}` },
+      { k: "Клиентов в 24-м месяце", v: nf0.format(Math.round(last.total)), n: `средний чек ${rub(R.arpu)}` },
+      { k: "Первый месяц в плюсе", v: R.firstPlus >= 0 ? R.rows[R.firstPlus].label : "—", n: firstPlus },
+      { k: "Окупаемость запуска", v: R.payback >= 0 ? R.rows[R.payback].label : "—", n: payback },
+      { k: "Ценность клиента (LTV)", v: R.ltv != null ? big(R.ltv) : "—",
+        n: R.cac ? `цена привлечения ${rub(R.cac)}${ltvCac ? ` · окупает рекламу в ${nf1.format(ltvCac)} раза` : ""}` : "реклама выключена — цена привлечения не считается" }
+    ].map(t => `<div class="kpi${t.main ? " main" : ""}"><div class="k">${t.k}</div><div class="v">${t.v}</div><div class="n">${t.n}</div></div>`).join("");
+
+    lineChart($("chartMoney"), R.rows, [
+      { name: "Выручка", color: "#3987e5", get: r => r.revenue },
+      { name: "Все расходы", color: "#ff3b52", get: r => r.costs },
+      { name: "Чистая прибыль", color: "#199e70", get: r => r.net }
+    ], { fmt: shortMoney, tipFmt: rub, aria: "Выручка, расходы и чистая прибыль по месяцам" });
+    lineChart($("chartClients"), R.rows, [
+      { name: "Клиентов", color: "#9085e9", get: r => r.total }
+    ], { w: 420, h: 300, left: 40, right: 44, endLabel: true, fmt: v => nf0.format(Math.round(v)), tipFmt: v => nf1.format(v), aria: "Клиентов на конец месяца" });
+
+    const head = ["Месяц", "Клиентов", "Новых без рекламы", "Новых из рекламы", "Ушло", "Выручка", "НДС и комиссии",
+      "Публикация", "Claude и хранение", "Сервер", "Команда и прочее", "Реклама", "Налог компании", "Чистая прибыль", "Накоплено"];
+    const body = R.rows.map((r, i) => `<tr${i === 12 ? ' class="year"' : ""}>
+      <td>${r.label}</td>
+      <td>${nf0.format(Math.round(r.total))}</td>
+      <td>${nf1.format(r.newOrg + r.newRef)}</td>
+      <td>${nf1.format(r.newPaid)}</td>
+      <td>${nf1.format(r.churned)}</td>
+      <td>${nf0.format(Math.round(r.revenue))}</td>
+      <td>${nf0.format(Math.round(r.vatFees))}</td>
+      <td>${nf0.format(Math.round(r.publishing))}</td>
+      <td>${nf0.format(Math.round(r.claude + r.storage))}</td>
+      <td title="рабочих компьютеров: ${r.workers}">${nf0.format(Math.round(r.server))}</td>
+      <td>${nf0.format(Math.round(r.team + r.other))}</td>
+      <td>${nf0.format(Math.round(r.marketing))}</td>
+      <td>${nf0.format(Math.round(r.tax))}</td>
+      <td class="${cls(r.net)}">${signed(r.net)}</td>
+      <td class="${cls(r.cum)}">${signed(r.cum)}</td></tr>`).join("");
+    const tot = k => nf0.format(Math.round(R.rows.reduce((a, r) => a + r[k], 0)));
+    const foot = `<tr><td>Итого</td><td>${nf0.format(Math.round(last.total))}</td>
+      <td>${nf1.format(R.rows.reduce((a, r) => a + r.newOrg + r.newRef, 0))}</td>
+      <td>${nf1.format(R.rows.reduce((a, r) => a + r.newPaid, 0))}</td>
+      <td>${nf1.format(R.rows.reduce((a, r) => a + r.churned, 0))}</td>
+      <td>${tot("revenue")}</td><td>${tot("vatFees")}</td><td>${tot("publishing")}</td>
+      <td>${nf0.format(Math.round(R.rows.reduce((a, r) => a + r.claude + r.storage, 0)))}</td>
+      <td>${tot("server")}</td><td>${nf0.format(Math.round(R.rows.reduce((a, r) => a + r.team + r.other, 0)))}</td>
+      <td>${tot("marketing")}</td><td>${tot("tax")}</td>
+      <td class="${cls(R.net)}">${signed(R.net)}</td><td class="${cls(last.cum)}">${signed(last.cum)}</td></tr>`;
+    $("table").innerHTML = `<thead><tr>${head.map(h => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody><tfoot>${foot}</tfoot>`;
+  }
+
+  /* ————— кнопки ————— */
+  function toast(t) { $("toast").textContent = t; setTimeout(() => { $("toast").textContent = ""; }, 3500); }
+  $("params").addEventListener("input", e => { if (e.target.id) readInput(e.target); });
+  $("params").addEventListener("change", e => { if (e.target.id) readInput(e.target); });
+  $("btnReset").addEventListener("click", () => { S = clone(DEFAULTS); save(); renderParams(); update(); toast("Исходные значения возвращены"); });
+  $("btnCopy").addEventListener("click", () => {
+    const text = JSON.stringify(S);
+    const done = () => toast("Настройки скопированы — отправьте их текстом, получатель нажмёт «Вставить настройки»");
+    try {
+      navigator.clipboard.writeText(text).then(done, () => { showPaste(text); toast("Скопируйте текст из поля ниже"); });
+    } catch (e) { showPaste(text); toast("Скопируйте текст из поля ниже"); }
+  });
+  function showPaste(text) { $("pasteBox").hidden = false; $("pasteArea").value = text || ""; if (text) $("pasteArea").select(); }
+  $("btnPasteToggle").addEventListener("click", () => { $("pasteBox").hidden = !$("pasteBox").hidden; if (!$("pasteBox").hidden) $("pasteArea").focus(); });
+  $("btnApply").addEventListener("click", () => {
+    try {
+      S = merge(clone(DEFAULTS), JSON.parse($("pasteArea").value));
+      save(); renderParams(); update(); $("pasteBox").hidden = true; toast("Настройки применены");
+    } catch (e) { toast("Не получилось прочитать настройки — вставьте текст целиком"); }
+  });
+
+  renderParams();
+  update();
+})();
+</script>
+
+</body>
+</html>
