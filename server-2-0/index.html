@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Финмодель завода 2.0</title>
+<meta name="description" content="Финансовая модель серверной версии Контент-завода 2.0: тарифы, себестоимость клиента, юнит-экономика, безубыточность и прогноз на 12 месяцев. Все цифры можно менять.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Onest:wght@400;500;600&display=swap">
+<style>
+/* Брендбук Контент-завода: тёмный #0B0D0F, светлые разделы #F5F6F7, один красный акцент #E4102B,
+   Oswald — заголовки и цифры, Onest — текст. Страница одна, без внешних скриптов. */
+:root {
+  color-scheme: light;
+  --bg: #F5F6F7; --card: #FFFFFF; --card-2: #EDEFF1; --ink: #0B0D0F; --ink-2: #3B4148; --ink-3: #5A616A;
+  --line: rgba(11,13,15,.13); --line-strong: rgba(11,13,15,.26);
+  --red: #E4102B; --red-ink: #C20D24; --ok: #0D7A4E; --bad: #C3172E; --warn: #8A5A00;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --grid: rgba(11,13,15,.09);
+  --display: "Oswald", Impact, "Arial Narrow", Arial, sans-serif;
+  --text: "Onest", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0B0D0F; --card: #121619; --card-2: #1A1F23; --ink: #FFFFFF; --ink-2: rgba(255,255,255,.76); --ink-3: rgba(255,255,255,.58);
+    --line: rgba(255,255,255,.12); --line-strong: rgba(255,255,255,.24);
+    --red-ink: #FF4A5F; --ok: #3ECF8E; --bad: #FF6B7D; --warn: #E8BF5E;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #0ca30c; --s7: #9085e9; --s8: #e66767;
+    --grid: rgba(255,255,255,.09);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B0D0F; --card: #121619; --card-2: #1A1F23; --ink: #FFFFFF; --ink-2: rgba(255,255,255,.76); --ink-3: rgba(255,255,255,.58);
+  --line: rgba(255,255,255,.12); --line-strong: rgba(255,255,255,.24);
+  --red-ink: #FF4A5F; --ok: #3ECF8E; --bad: #FF6B7D; --warn: #E8BF5E;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #0ca30c; --s7: #9085e9; --s8: #e66767;
+  --grid: rgba(255,255,255,.09);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 70px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.55 var(--text); overflow-x: hidden; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+a { color: var(--red-ink); }
+code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--card-2); padding: 1px 5px; border-radius: 5px; word-break: break-word; }
+pre { font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--card-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; overflow-x: auto; margin: 8px 0; }
+
+/* ---------- шапка (всегда тёмная, как в брендбуке) ---------- */
+.hero { background: #0B0D0F; color: #fff; position: relative; overflow: hidden; }
+.hero::before { content: ""; position: absolute; right: -160px; top: -200px; width: 560px; height: 560px; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(228,16,43,.38), transparent); }
+.hero .wrap { position: relative; padding-top: 30px; padding-bottom: 26px; }
+.topline { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.eyebrow { font: 500 12px/1.2 var(--display); letter-spacing: .16em; text-transform: uppercase; color: #FF4A5F; display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 48px; height: 4px; background: #E4102B; border-radius: 2px; flex: none; }
+h1 { font: 600 clamp(32px, 6vw, 56px)/1.05 var(--display); margin: 16px 0 12px; text-wrap: balance; }
+h1 em { font-style: normal; color: #FF4A5F; }
+.lead { color: rgba(255,255,255,.78); max-width: 72ch; margin: 0 0 14px; }
+.lead b { color: #fff; font-weight: 600; }
+.disclaimer { display: inline-flex; gap: 10px; align-items: flex-start; border: 1px solid rgba(228,16,43,.6); background: rgba(228,16,43,.12);
+  border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 14px; max-width: 80ch; }
+.disclaimer b { color: #FF4A5F; }
+.theme { display: flex; gap: 4px; background: rgba(255,255,255,.08); border-radius: 10px; padding: 3px; }
+.theme button { background: transparent; border: 0; color: rgba(255,255,255,.75); padding: 7px 10px; font: 500 12px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; border-radius: 8px; cursor: pointer; }
+.theme button[aria-pressed="true"] { background: #E4102B; color: #fff; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 18px; }
+nav.toc a { color: rgba(255,255,255,.86); text-decoration: none; font: 500 13px/1 var(--display); letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,.2); padding: 8px 10px; border-radius: 8px; }
+nav.toc a:hover { border-color: #FF4A5F; }
+nav.toc a.hl { border-color: #E4102B; background: rgba(228,16,43,.18); }
+
+/* ---------- полоса итогов ---------- */
+.sticky { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line); }
+.sticky .wrap { display: flex; flex-wrap: wrap; gap: 4px 22px; align-items: baseline; padding-top: 9px; padding-bottom: 9px; }
+.sticky .it { display: flex; gap: 7px; align-items: baseline; }
+.sticky .k { font: 500 11px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.sticky .v { font: 600 16px/1 var(--display); font-variant-numeric: tabular-nums; }
+
+/* ---------- разделы ---------- */
+section { padding: 30px 0 6px; }
+h2 { font: 600 clamp(22px, 3.2vw, 28px)/1.15 var(--display); margin: 0 0 8px; display: flex; align-items: center; gap: 12px; }
+h2::before { content: ""; width: 36px; height: 4px; background: var(--red); border-radius: 2px; flex: none; }
+h3 { font: 600 17px/1.25 var(--display); letter-spacing: .02em; margin: 0 0 8px; }
+.sub { color: var(--ink-2); margin: 0 0 14px; max-width: 80ch; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.small { font-size: 13px; color: var(--ink-3); }
+.pos { color: var(--ok); } .neg { color: var(--bad); }
+
+/* пояснение: что показывает / откуда берётся / на что влияет */
+.explain { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--line); border-left: 4px solid var(--red);
+  border-radius: 14px; background: var(--card); margin: 14px 0; overflow: hidden; }
+.explain > div { padding: 12px 14px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); min-width: 0; }
+.explain > div + div { border-left: 1px solid var(--line); }
+.explain b.h { display: block; font: 600 11.5px/1.2 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); margin-bottom: 6px; }
+.explain ul { margin: 4px 0 0; padding-left: 18px; }
+@media (max-width: 820px) { .explain { grid-template-columns: 1fr; } .explain > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+
+/* сценарий 1 млн */
+.goal { background: #0B0D0F; color: #fff; border-radius: 22px; padding: 22px; border: 1px solid rgba(228,16,43,.6); position: relative; overflow: hidden; }
+.goal::after { content: ""; position: absolute; left: -120px; bottom: -220px; width: 440px; height: 440px; background: radial-gradient(closest-side, rgba(228,16,43,.28), transparent); pointer-events: none; }
+.goal .tag { font: 500 12px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: #FF4A5F; }
+.goal .big { font: 600 clamp(24px, 4vw, 38px)/1.15 var(--display); margin: 10px 0 8px; text-wrap: balance; position: relative; z-index: 1; }
+.goal .big em { font-style: normal; color: #FF4A5F; }
+.goal .mix { color: rgba(255,255,255,.82); position: relative; z-index: 1; }
+.goal .mix b { color: #fff; }
+.goal .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; position: relative; z-index: 1; }
+.goal label { color: rgba(255,255,255,.8); font-size: 14px; }
+.goal input[type=number] { width: 150px; background: #161A1D; color: #fff; border-color: rgba(255,255,255,.25); }
+.goal .note { color: rgba(255,255,255,.66); font-size: 13px; margin-top: 10px; position: relative; z-index: 1; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 14px 0; }
+.kpi { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; min-width: 0; }
+.kpi .k { font: 500 11px/1.3 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+.kpi .v { font: 600 clamp(21px, 2.3vw, 27px)/1.15 var(--display); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.kpi .n { color: var(--ink-2); font-size: 12.5px; margin-top: 4px; line-height: 1.4; }
+.kpi.main { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
+
+/* инструкция */
+.howto { border: 2px solid var(--red); border-radius: 22px; background: var(--card); padding: 20px; }
+.howto ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 14px; }
+.howto ol.steps > li { counter-increment: s; position: relative; padding-left: 46px; min-width: 0; }
+.howto pre { max-width: 100%; }
+@media (max-width: 480px) { .howto { padding: 16px 14px; } .howto ol.steps > li { padding-left: 40px; } }
+.howto ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--red); color: #fff;
+  font: 600 16px/32px var(--display); text-align: center; }
+.howto h3 { margin-bottom: 4px; }
+.howto p { margin: 4px 0; color: var(--ink-2); }
+
+/* поля */
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 440px) { .groups { grid-template-columns: 1fr; } }
+details.group { background: var(--card); border: 1px solid var(--line); border-radius: 18px; min-width: 0; }
+details.group.wide { grid-column: 1 / -1; }
+details.group > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+details.group > summary::-webkit-details-marker { display: none; }
+details.group > summary::after { content: "+"; font: 500 22px/1 var(--display); color: var(--red-ink); flex: none; }
+details.group[open] > summary::after { content: "–"; }
+details.group > summary .hint { display: block; font-size: 12.5px; color: var(--ink-3); }
+.gbody { padding: 0 16px 16px; display: grid; gap: 12px; }
+.gexp { font-size: 13px; color: var(--ink-2); background: var(--card-2); border-radius: 10px; padding: 10px 12px; }
+.gexp b { color: var(--ink); }
+.field { display: grid; grid-template-columns: 1fr 150px; gap: 4px 12px; align-items: center; }
+@media (max-width: 440px) { .field { grid-template-columns: 1fr 120px; } }
+.field label { font-size: 14px; }
+.field .note { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-3); line-height: 1.4; }
+.field.changed label::after { content: " • изменено"; color: var(--red-ink); font-size: 12px; }
+.inp { display: flex; align-items: center; gap: 6px; }
+.unit { color: var(--ink-3); font-size: 12px; min-width: 26px; }
+input[type=number], select { width: 100%; background: var(--card-2); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px;
+  padding: 8px 10px; font: 500 16px/1.2 var(--text); font-variant-numeric: tabular-nums; min-width: 0; }
+input[type=number] { text-align: right; }
+input.ch, select.ch { border-color: var(--red); }
+input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid var(--red-ink); outline-offset: 2px; }
+.src { display: inline-block; font: 600 10px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; padding: 3px 6px; border-radius: 5px; margin-right: 6px; vertical-align: 1px; }
+.src.zamer { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.src.cena { background: color-mix(in srgb, var(--s1) 18%, transparent); color: var(--s1); }
+.src.ocenka { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+.src.reshenie { background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red-ink); }
+button.btn { font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; cursor: pointer; border-radius: 10px; padding: 12px 16px;
+  border: 1px solid var(--line-strong); background: transparent; color: inherit; touch-action: manipulation; }
+button.btn.primary { background: #E4102B; border-color: #E4102B; color: #fff; }
+.goal button.btn { border-color: rgba(255,255,255,.3); }
+@media (hover: hover) { button.btn:hover { border-color: #FF4A5F; } }
+
+/* таблицы */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--card); -webkit-overflow-scrolling: touch; }
+table.t { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+.t th, .t td { padding: 8px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.t thead th { font: 500 11px/1.25 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); background: var(--card-2); white-space: normal; vertical-align: bottom; }
+.t th:first-child, .t td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); z-index: 1; }
+.t thead th:first-child { background: var(--card-2); z-index: 2; }
+.t tbody tr:last-child td { border-bottom: 0; }
+.t th .s { display: block; text-transform: none; letter-spacing: 0; }
+.t td .s { display: block; color: var(--ink-3); font-size: 11.5px; }
+.t tr.tot td { font-weight: 600; background: var(--card-2); }
+.t tr.tot td:first-child { background: var(--card-2); }
+.t tr.hl td { background: color-mix(in srgb, var(--red) 9%, var(--card)); }
+.t tr.hl td:first-child { background: color-mix(in srgb, var(--red) 9%, var(--card)); }
+.t tr.grp td { font: 600 11px/1.2 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); background: var(--card); text-align: left; padding-top: 14px; }
+.t input { width: 96px; padding: 6px 8px; font-size: 14px; }
+.min700 { min-width: 700px; } .min900 { min-width: 900px; }
+
+/* графики */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { font-family: var(--text); fill: var(--ink-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink-2); font-size: 13px; margin: 2px 0 10px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+.legend i.ln { height: 3px; width: 18px; border-radius: 2px; vertical-align: 3px; }
+#tip { position: fixed; z-index: 50; pointer-events: none; background: var(--card); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 10px;
+  padding: 8px 10px; font-size: 12.5px; line-height: 1.45; box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: 280px; display: none; font-variant-numeric: tabular-nums; }
+#tip b { font-family: var(--display); font-weight: 600; letter-spacing: .03em; }
+#tip i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; }
+
+.srcs { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.srcs ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); font-size: 14px; }
+.srcs li b { color: var(--ink); }
+footer { color: var(--ink-3); font-size: 13px; border-top: 1px solid var(--line); margin-top: 34px; padding: 16px 0 50px; }
+.warnbox { border: 1px solid color-mix(in srgb, var(--warn) 60%, transparent); background: color-mix(in srgb, var(--warn) 10%, var(--card)); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; color: var(--ink-2); margin: 10px 0; }
+.warnbox:empty { display: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="topline">
+      <div class="eyebrow">Контент-завод 2.0 · серверная версия</div>
+      <div class="theme" role="group" aria-label="Тема страницы">
+        <button type="button" data-theme-set="auto">Авто</button>
+        <button type="button" data-theme-set="light">Светлая</button>
+        <button type="button" data-theme-set="dark">Тёмная</button>
+      </div>
+    </div>
+    <h1>Финмодель <em>Контент-завода 2.0</em></h1>
+    <p class="lead">Только серверная версия: подписка в Telegram и в браузере — тарифы «Старт», «Про», «Максимум», пробные «Сутки» и «Личная распаковка». Коробки и интенсива здесь нет. Страница считает, <b>сколько стоит один клиент, сколько остаётся после всех расходов и налогов, когда завод выходит в ноль</b> и как будут расти деньги за 12 месяцев. Любую цифру можно поменять — всё пересчитается сразу.</p>
+    <div class="disclaimer" role="note"><span>⚠️</span><span><b>Это модель, а не отчёт.</b> Цифры — допущения на <b id="defDate">24.11.2026</b>: цены и замеры из репозитория, остальное — оценки (у каждой подписано, откуда она). Живыми деньгами месячные тарифы ещё не оплачивал ни один клиент — сверяйте модель с фактом, когда он появится.</span></div>
+    <nav class="toc" aria-label="Разделы">
+      <a href="#scenario" class="hl">Сценарий 1 млн</a>
+      <a href="#howto" class="hl">Как пользоваться</a>
+      <a href="#inputs">Допущения</a>
+      <a href="#tariffs">Себестоимость клиента</a>
+      <a href="#unit">Юнит-экономика</a>
+      <a href="#month">Месяц сценария</a>
+      <a href="#be">Безубыточность</a>
+      <a href="#forecast">Прогноз 12 мес</a>
+      <a href="#taxes">Налоги</a>
+      <a href="#sources">Откуда цифры</a>
+    </nav>
+  </div>
+</header>
+
+<div class="sticky" aria-live="polite"><div class="wrap" id="stickyRow"></div></div>
+
+<main class="wrap">
+
+<!-- ================= СЦЕНАРИЙ ================= -->
+<section id="scenario" aria-labelledby="h-scen">
+  <h2 id="h-scen">Сценарий: сколько клиентов нужно</h2>
+  <div class="goal">
+    <div class="tag" id="goalTag">Сценарий по умолчанию</div>
+    <div class="big" id="goalBig"></div>
+    <div class="mix" id="goalMix"></div>
+    <div class="row">
+      <button type="button" class="btn primary" id="btnReset">Вернуть сценарий 1 млн</button>
+      <label for="target">Своя цель, ₽ чистыми в месяц</label>
+      <input type="number" id="target" inputmode="decimal" step="50000" min="0">
+      <button type="button" class="btn" id="btnSolve">Подобрать число клиентов</button>
+    </div>
+    <div class="note" id="goalNote"></div>
+  </div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Сколько платящих подписчиков нужно, чтобы в обычный месяц (без разовых трат первого месяца) после всех расходов, рекламы и налогов оставалось столько чистой прибыли. По умолчанию цель — 1 000 000 ₽ в месяц.</div>
+    <div><b class="h">Откуда берётся</b>Модель перебирает число подписчиков от 1 и выше, сохраняя доли тарифов (по умолчанию 35 : 25 : 10 из финмодели 28.10, то есть ≈ 50 % «Старт», 36 % «Про», 14 % «Максимум»), и останавливается на первом числе, где чистая прибыль ≥ цели. «Сутки», распаковки и бесплатные ролики остаются такими, как заданы в допущениях. Цены — из настройки тарифов на сервере (<code>KZ_TARIFFS</code>, сверено 14.11.2026), расходы — из разделов ниже.</div>
+    <div><b class="h">На что влияет</b>Эти числа клиентов — исходные значения всей страницы: от них считаются себестоимость клиента, юнит-экономика, месяц сценария и точка на графике безубыточности. Кнопка «Подобрать» меняет только число подписчиков; кнопка «Вернуть сценарий 1 млн» возвращает все поля к исходным и стирает сохранённое в этом браузере.</div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+</section>
+
+<!-- ================= КАК ПОЛЬЗОВАТЬСЯ ================= -->
+<section id="howto" aria-labelledby="h-howto">
+  <h2 id="h-howto">Как пользоваться и как менять</h2>
+  <div class="howto">
+    <ol class="steps">
+      <li><h3>Меняйте цифры прямо на странице</h3>
+        <p>Все допущения — в разделе <a href="#inputs">«Допущения»</a>: число клиентов, цены и состав тарифов, отток, расходы на нейросети, сервер, публикацию, команду, налоги, рекламу. Раскройте группу (плюс справа), впишите число — итоги, таблицы и графики пересчитаются сразу. Изменённое поле помечается словом «изменено» и красной рамкой. Под каждым полем написано, откуда взято исходное число: <span class="src zamer">замер</span> — измерено на нашем сервере, <span class="src cena">цена</span> — с сайта поставщика или из закона, <span class="src reshenie">решение</span> — так решил владелец, <span class="src ocenka">оценка</span> — допущение, не проверено.</p></li>
+      <li><h3>Что запоминается и как сбросить</h3>
+        <p>Ваши правки сохраняются <b>только в этом браузере на этом устройстве</b> (хранилище браузера). Другие люди и другие ваши устройства их не видят, на сервер ничего не уходит. В приватном окне правки пропадут после закрытия. Кнопка <b>«Вернуть сценарий 1 млн»</b> (вверху, в красной рамке сценария) стирает сохранённое и возвращает все исходные цифры.</p></li>
+      <li><h3>Как поменять целевой сценарий</h3>
+        <p><b>На один раз, для себя:</b> впишите цель в поле «Своя цель, ₽ чистыми в месяц» и нажмите «Подобрать число клиентов» — модель подберёт подписчиков с теми же долями тарифов. Доли меняются вручную: поменяйте число клиентов каждого тарифа в группе «Клиенты сценария», а потом снова нажмите «Подобрать».</p>
+        <p><b>Насовсем, для всех:</b> поменяйте в файле значения <code>cl_start</code>, <code>cl_pro</code>, <code>cl_max</code> и при желании <code>target</code> в объекте <code>DEFAULTS</code> (см. следующий шаг). Быстрый способ узнать нужные числа — подобрать их на странице и переписать из группы «Клиенты сценария».</p></li>
+      <li><h3>Как поменять исходные цифры насовсем</h3>
+        <p>Исходные значения живут в одном месте — объект <code>DEFAULTS</code> в самом начале скрипта внутри этого файла (найдите строку <code>const DEFAULTS = {</code>). У каждого числа рядом комментарий с источником. Пример — «Старт» подорожал до 14 990 ₽:</p>
+<pre>const DEFAULTS_DATE = "24.11.2026";   // ← поставьте дату правки
+const DEFAULTS = {
+  ...
+  start_price: 13990,   // было
+  start_price: 14990,   // стало — «Старт», ₽ в месяц (KZ_TARIFFS, решение владельца ДД.ММ)
+  ...
+};</pre>
+        <p>Поменяли число — поменяйте и подпись источника в списке полей ниже по файлу (массивы <code>GROUPS</code> и <code>TGRID</code>, там же текст «откуда»), и дату <code>DEFAULTS_DATE</code>. У тех, кто это поле на своей странице не трогал, новое значение появится само. У тех, кто его менял, — тоже: сохранённая правка отбрасывается, если исходное значение в файле изменилось.</p></li>
+      <li><h3>Как опубликовать правку</h3>
+        <p>Страница — один файл <code>index.html</code>, без сервера и без сборки. Исходник лежит в репозитории проекта: <code>docs/финмодель/server-2-0/index.html</code> (главный) и его точная копия <code>docs/finmodel-server/index.html</code>. Поправили — сохраните изменения в репозитории (коммит и отправка на GitHub) и положите тот же файл в репозиторий публикации страницы, папку <code>server-2-0/</code>. Через минуту-две после отправки GitHub обновит страницу по тому же адресу. Проверьте: обновите страницу с очисткой кэша и посмотрите дату в красной плашке вверху.</p></li>
+      <li><h3>К кому идти</h3>
+        <p>Цены тарифов, доли тарифов, реклама, команда — решения владельцев (Валерия, Антон). Расходы на сервер, нейросети, публикацию и правку самого файла — техническая часть, Антон или Клод на его машине (попросите: «обнови финмодель 2.0: поменяй … в DEFAULTS и опубликуй»). Налоги — перед решениями сверять с бухгалтером: модель — не налоговое заключение.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= ДОПУЩЕНИЯ ================= -->
+<section id="inputs" aria-labelledby="h-inp">
+  <h2 id="h-inp">Допущения</h2>
+  <p class="sub">Все входные цифры модели, по группам. Сохраняются в этом браузере.</p>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Всё, из чего модель считает: клиентов, цены и состав тарифов, расходы на одного клиента (нейросети, облако, сервер, публикация, ручная работа), постоянные расходы (команда, сервисы), налоги, рекламу и скорость притока клиентов.</div>
+    <div><b class="h">Откуда берётся</b>Цены тарифов — <code>KZ_TARIFFS</code> на сервере (сверено 14.11.2026) и <code>server/pay/tarify_matrica.json</code>; расходы — прежняя финмодель 28.10.2026 (<code>docs/финмодель/ФИНМОДЕЛЬ_ЗАВОДА_2_0.html</code>), <code>СОСТОЯНИЕ.md</code> (сервер, посредник), документы <code>docs/server/</code>. У каждого поля своя подпись источника.</div>
+    <div><b class="h">На что влияет</b>На всё ниже. Сильнее всего итог двигают: число клиентов, цены, отток, доля прибыли на рекламу и команда (бухгалтерия и менеджеры включаются с 50-го клиента). Расходы на нейросети и сервер на одного клиента малы по сравнению с ценой — их ошибка в 2 раза меняет прибыль на несколько процентов.</div>
+  </div>
+  <div class="groups" id="groups"></div>
+</section>
+
+<!-- ================= СЕБЕСТОИМОСТЬ ================= -->
+<section id="tariffs" aria-labelledby="h-tar">
+  <h2 id="h-tar">Себестоимость одного клиента по тарифам</h2>
+  <p class="sub" id="tarSub"></p>
+  <div class="table-wrap"><table class="t min900" id="tarTable"></table></div>
+  <div class="card chart" style="margin-top:12px">
+    <h3>Куда уходит цена тарифа</h3>
+    <div class="legend" id="splitLegend"></div>
+    <div id="splitChart"></div>
+  </div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Из чего складывается расход на одного подписчика каждого тарифа за месяц и сколько от цены остаётся заводу. Каждая полоса на графике — цена тарифа целиком, зелёный кусок — то, что остаётся.</div>
+    <div><b class="h">Откуда берётся</b><ul>
+      <li><b>Нейросети</b> = рилсы × цена текста рилса + карусели × цена текста карусели + план месяца и разборы (анимированные дороже; доля анимированных — в таблице тарифов).</li>
+      <li><b>Облако fal</b> = рилсы × (расшифровка речи + доля анимированных × вырезка спикера) × курс доллара.</li>
+      <li><b>Сервер</b> — весь счёт за сервер сборки, поделённый по минутам сборки (анимация весит втрое).</li>
+      <li><b>Публикация</b> — счета Upload-Post и SmmBox, поделённые по профилям и соцсетям клиента.</li>
+      <li><b>Комиссия и возвраты</b> — процент от цены; <b>налог</b> — средняя ставка завода × цена; <b>общие расходы и реклама</b> делятся пропорционально цене тарифа (решение владельца 17.10).</li></ul></div>
+    <div><b class="h">На что влияет</b>Показывает, какой тариф выгоднее заводу и где цена близка к расходам. Сумма маржи всех клиентов (плюс «Сутки» и распаковки) — это чистая прибыль месяца сценария. Владелец 01.11 поднял «Старт» до 13 990 ₽, чтобы с каждого тарифа оставалось не меньше 10 000 ₽ — строка «Остаётся» это проверяет.</div>
+  </div>
+</section>
+
+<!-- ================= ЮНИТ-ЭКОНОМИКА ================= -->
+<section id="unit" aria-labelledby="h-unit">
+  <h2 id="h-unit">Юнит-экономика: один средний подписчик</h2>
+  <p class="sub">Средний подписчик — смесь тарифов в долях сценария. Под каждым числом — как оно считается.</p>
+  <div class="kpis" id="unitKpis"></div>
+  <div class="warnbox" id="unitWarn"></div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Окупается ли привлечение одного клиента: сколько он приносит в месяц и за всё время, сколько стоит его привлечь и за сколько месяцев эти деньги возвращаются. Сокращения: ARPU — средняя выручка на клиента в месяц, CAC — стоимость привлечения одного платящего клиента, LTV — сколько заводу остаётся с клиента за всё время, пока он платит.</div>
+    <div><b class="h">Откуда берётся</b><ul>
+      <li><b>Вклад в месяц</b> = средний чек − комиссия GetCourse − возвраты − налог 6 % − прямые расходы на клиента (нейросети, облако, сервер, публикация, ручная работа).</li>
+      <li><b>Срок жизни</b> = 1 ÷ средний отток в месяц.</li>
+      <li><b>LTV</b> = вклад в месяц × срок жизни.</li>
+      <li><b>CAC</b> = реклама за месяц ÷ сколько новых платящих нужно в месяц, чтобы заменить ушедших (минус перешедшие из «Суток»).</li>
+      <li><b>Окупаемость</b> = CAC ÷ вклад в месяц.</li></ul></div>
+    <div><b class="h">На что влияет</b>LTV/CAC больше 3 — привлечение выгодно, можно тратить больше на рекламу; меньше 1 — каждый новый клиент убыточен. Окупаемость дольше срока жизни — клиент уходит раньше, чем вернёт деньги на своё привлечение. Самые сильные рычаги — отток (срок жизни) и цена.</div>
+  </div>
+</section>
+
+<!-- ================= МЕСЯЦ СЦЕНАРИЯ ================= -->
+<section id="month" aria-labelledby="h-month">
+  <h2 id="h-month">Месяц сценария: доходы, расходы, прибыль</h2>
+  <p class="sub">Обычный месяц при числе клиентов из сценария: без разовых трат (юрист) и без роста.</p>
+  <div class="table-wrap"><table class="t min700" id="monthTable"></table></div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Отчёт о прибылях и убытках за один обычный месяц: откуда приходят деньги и куда уходят, до чистой прибыли — того, что остаётся владельцам.</div>
+    <div><b class="h">Откуда берётся</b>Выручка = подписчики × цены + «Сутки» × 990 ₽ − зачёт 990 ₽ у перешедших из «Суток» в подписку + распаковки. Расходы — из допущений. Налоги посчитаны так, будто этот месяц повторяется 12 раз (годовая выручка = месяц × 12): от годовой суммы зависят взносы ИП и порог НДС. Реклама — по правилу владельца: доля прибыли до рекламы, но не меньше минимума.</div>
+    <div><b class="h">На что влияет</b>Последняя строка — та самая чистая прибыль из сценария. «Валовая маржа» показывает, сколько остаётся после прямых расходов, комиссий и возвратов: из этого платятся команда, сервисы, реклама и налоги.</div>
+  </div>
+</section>
+
+<!-- ================= БЕЗУБЫТОЧНОСТЬ ================= -->
+<section id="be" aria-labelledby="h-be">
+  <h2 id="h-be">Точка безубыточности</h2>
+  <p class="sub" id="beSub"></p>
+  <div class="card chart">
+    <h3>Чистая прибыль в месяц при разном числе подписчиков</h3>
+    <div id="beChart"></div>
+  </div>
+  <div class="table-wrap" style="margin-top:12px"><table class="t min700" id="beTable"></table></div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>С какого числа подписчиков завод перестаёт терять деньги и как растёт прибыль дальше. Ступеньки вниз на линии — моменты, когда добавляются бухгалтерия, очередной менеджер или более дорогой тариф поставщика.</div>
+    <div><b class="h">Откуда берётся</b>Тот же расчёт месяца сценария, но число подписчиков меняется от 0 до нескольких сотен при тех же долях тарифов. «Сутки», распаковки и бесплатные ролики меняются в той же пропорции (при числе клиентов сценария — как в допущениях, при нуле подписчиков — ноль): иначе разовые покупки сами покрыли бы небольшие постоянные расходы, и точка безубыточности ничего бы не говорила. Точка безубыточности — первое число подписчиков, при котором чистая прибыль после налогов и рекламы не меньше нуля.</div>
+    <div><b class="h">На что влияет</b>Подсказывает первую цель продаж: до этой точки завод живёт на деньги владельцев. Сильнее всего точку сдвигают постоянные расходы (подписки, сервер, посредник), минимальный бюджет рекламы и порог найма бухгалтерии и менеджера.</div>
+  </div>
+</section>
+
+<!-- ================= ПРОГНОЗ ================= -->
+<section id="forecast" aria-labelledby="h-fc">
+  <h2 id="h-fc">Прогноз по месяцам</h2>
+  <p class="sub" id="fcSub"></p>
+  <div class="grid2">
+    <div class="card chart"><h3>Выручка, расходы и прибыль за месяц</h3>
+      <div class="legend"><span><i class="ln" style="background:var(--s1)"></i>выручка</span><span><i class="ln" style="background:var(--s2)"></i>все расходы с налогами</span><span><i class="ln" style="background:var(--s3)"></i>чистая прибыль</span></div>
+      <div id="fcChart"></div></div>
+    <div class="card chart"><h3>Деньги на счёте завода (нарастающим итогом)</h3>
+      <div class="legend"><span><i class="ln" style="background:var(--s1)"></i>деньги на конец месяца</span></div>
+      <div id="cashChart"></div></div>
+  </div>
+  <div class="table-wrap" style="margin-top:12px"><table class="t min900" id="fcTable"></table></div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Как завод растёт от стартового числа подписчиков: сколько приходит и уходит клиентов, выручка, расходы, налоги, прибыль каждого месяца и деньги нарастающим итогом. Самая низкая точка денег — сколько владельцам нужно вложить, пока завод не начнёт зарабатывать.</div>
+    <div><b class="h">Откуда берётся</b>Каждый месяц: подписчики = прошлый месяц × (1 − отток) + новые. Новые = прямой приток (растёт на заданный процент в месяц) + перешедшие из «Суток». Можно включить приток от бюджета: новые = реклама ÷ стоимость привлечения. Реклама: первый месяц — заданная сумма, дальше доля прибыли прошлого месяца до рекламы, но не меньше минимума. Налоги — нарастающим итогом с начала года (каждые 12 месяцев — новый год). Юрист — разово в первом месяце. Поэтому в первый год прибыль бывает выше, чем в сценарии при том же числе клиентов: НДС включается, только когда доход с начала года перевалил за 20 млн ₽. Исходный приток подобран так, чтобы к 12-му месяцу выйти примерно на число клиентов сценария, — это путь к цели, а не обещание продаж.</div>
+    <div><b class="h">На что влияет</b>Показывает, когда завод выходит в плюс за месяц и когда возвращает вложенное. Если деньги на счёте уходят глубоко в минус — нужен запас или медленнее нанимать. Меняйте приток, отток и долю на рекламу в группе «Прогноз и привлечение».</div>
+  </div>
+</section>
+
+<!-- ================= НАЛОГИ ================= -->
+<section id="taxes" aria-labelledby="h-tax">
+  <h2 id="h-tax">Налоги — как посчитано</h2>
+  <div class="card" id="taxCard"></div>
+  <div class="explain">
+    <div><b class="h">Что показывает</b>Сколько завод отдаёт государству в месяц сценария и из чего это складывается: налог по упрощённой системе, страховые взносы ИП за себя, НДС при большом доходе, взносы за менеджера.</div>
+    <div><b class="h">Откуда берётся</b>ИП Чиркова, упрощённая система «доходы» 6 % (прежняя финмодель; план <code>docs/PLAN_10M.md</code>). Взносы ИП за 2026 год — 57 390 ₽ и 1 % с дохода свыше 300 000 ₽, не больше 321 818 ₽ (статья 430 Налогового кодекса; сверено по Контур.Эльбе и Saby 17.10). Налог 6 % уменьшается на взносы: пока нет работников — полностью, с менеджером по договору или в штате — не больше чем наполовину. НДС 5 % — если доход за год больше 20 млн ₽ (закон № 425-ФЗ от 28.11.2025).</div>
+    <div><b class="h">На что влияет</b>На чистую прибыль. Обратите внимание на порог НДС: годовая выручка около 20 млн ₽ — это примерно 1,7 млн ₽ в месяц, то есть рядом со сценарием 1 млн чистыми. Перешагнув порог, завод платит ещё 5 % с выручки. Перед решениями сверить с бухгалтером.</div>
+  </div>
+</section>
+
+<!-- ================= ИСТОЧНИКИ ================= -->
+<section id="sources" aria-labelledby="h-src">
+  <h2 id="h-src">Откуда цифры: что замерено, а что оценка</h2>
+  <div class="srcs">
+    <div class="card"><h3>Цены и решения — проверено</h3><ul>
+      <li><b>Тарифы</b>: «Сутки» 990 ₽ (разово, один раз на человека, 990 ₽ засчитываются в следующий тариф), «Старт» 13 990 ₽ (с 01.11, решение владельца; было 9 990), «Про» 19 990 ₽, «Максимум» 29 990 ₽ в месяц, «Личная распаковка» 39 990 ₽. Сверено с <code>KZ_TARIFFS</code> на сервере 14.11.2026 (<code>HANDOFF_Anton.md</code>). «Лайт» снят с продажи 27.10 — в модели его нет.</li>
+      <li><b>Состав тарифов</b> (рилсы / карусели): 2/3, 15/30, 45/65, 75/125 — <code>server/pay/tarify_matrica.json</code>, сетка 17.10.</li>
+      <li><b>Сервер</b>: Cloud.ru kz-mozg, 4 ядра / 8 ГБ, ≈ 5 112 ₽ в месяц; посредник для связи с Telegram (Hostkey, Нидерланды) — 490 ₽ в месяц с 18.11 (<code>СОСТОЯНИЕ.md</code>).</li>
+      <li><b>Время сборки</b>: рилс с субтитрами 3 мин 27 с (замер 16.10), анимированный рилс 14,6 мин (проба 27.10).</li>
+      <li><b>Upload-Post</b>: Basic $16 (5 профилей), Professional $33 (25), Advanced $118 (75), Business $350 (225) в месяц при оплате за год (<code>docs/server/UPLOAD_POST_ТАРИФЫ_14-10.md</code>). <b>SmmBox</b>: 1 700 ₽ за 50 страниц, 3 400 ₽ за 150 (сайт SmmBox, 03.10).</li>
+      <li><b>GetCourse</b>: комиссия «до 3,5 %» (getcourse.ru/getcoursepay, 17.10). Налоги — см. раздел «Налоги».</li>
+      <li><b>Реклама</b>: Яндекс Директ на сервер — кампания «Онлайн-сервис» ≈ 8 700 ₽ в месяц (решение 28.10), реинвест 20 % прибыли (решение 17.10). Бухгалтерия 50 000 ₽ и первый менеджер — с 50-го клиента (решение 17.10).</li>
+    </ul></div>
+    <div class="card"><h3>Оценки — заменить фактом</h3><ul>
+      <li><b>Нейросети на рилс и карусель</b> (12 / 34 / 12 / 15 ₽) — расчёт инструмента <code>tools/raschet_rashoda</code> на ценах Claude через Cloud.ru (финмодель 28.10), точность ±30 %; живого замера расхода по всем ролям нет. Отдельный расчёт <code>docs/server/РАСЧЁТ_РАСХОДА_CLAUDE.md</code> (06.10, другие цены) даёт 155 / 359 / 672 ₽ в месяц на тариф — то есть наша оценка скорее с запасом; худший случай там — до 2 196 / 6 317 / 16 856 ₽.</li>
+      <li><b>Облако fal</b>: вырезка спикера ~0,2 $ на анимированный рилс (проба 27.10), расшифровка ~0,01 $ (оценка из кода).</li>
+      <li><b>Доли тарифов, отток</b> (12 / 10 / 8 % в месяц), переход из «Суток» в подписку (20 %), приток, бесплатные ролики — допущения, фактических данных пока нет.</li>
+      <li><b>Сколько соцсетей подключает клиент</b>, доля анимированных роликов, минуты сборки каруселей, сколько сборок сразу держит сервер — не мерили.</li>
+      <li><b>Команда и сервисы</b>: ставка менеджера 60 000 ₽ на 50 клиентов, банк, ChatPlace, юрист, домен, копии, подписки разработки, ручная доработка 150 ₽ на клиента, возвраты 2,5 %, запас на рост цен 10 % — оценки, заменить счетами и договорами.</li>
+      <li><b>Время основателей</b> по умолчанию не оплачивается (0 ₽) — чтобы увидеть честную прибыль, поставьте ставку в группе «Команда».</li>
+    </ul></div>
+    <div class="card"><h3>Чем эта страница отличается от общей финмодели</h3><ul>
+      <li>Только сервер 2.0: убраны коробка, интенсив, внедрение под ключ и вид «Вместе». Налог считается так, будто у ИП нет другой выручки — если коробка продаётся, общий налог и порог НДС будут другими.</li>
+      <li>Цена «Старта» обновлена до 13 990 ₽ (в общей модели 28.10 стояло 9 990 ₽), добавлен посредник Telegram 490 ₽ и расход на бесплатные ролики.</li>
+      <li>Добавлены юнит-экономика (средний чек, стоимость привлечения, LTV, окупаемость), точка безубыточности, деньги нарастающим итогом и сценарий «1 млн чистыми».</li>
+      <li>Общая финмодель (коробка и сервер вместе) — <code>docs/финмодель/ФИНМОДЕЛЬ_ЗАВОДА_2_0.html</code>.</li>
+    </ul></div>
+  </div>
+</section>
+
+</main>
+<footer><div class="wrap">Финмодель Контент-завода 2.0 — серверная версия · исходные цифры на <span id="defDate2">24.11.2026</span> · один файл, работает без сервера, ничего никуда не отправляет · не налоговое заключение.</div></footer>
+<div id="tip" role="status"></div>
+
+<script>
+(function () {
+"use strict";
+
+/* =====================================================================
+   ИСХОДНЫЕ ЦИФРЫ (DEFAULTS) — менять здесь.
+   Подписи и источники полей — в массивах GROUPS и TGRID ниже.
+   После правки поменяйте дату DEFAULTS_DATE.
+   ===================================================================== */
+const DEFAULTS_DATE = "24.11.2026";
+const DEFAULTS = {
+  /* --- сценарий «1 млн чистыми в месяц» (подобран моделью 24.11.2026) --- */
+  target: 1000000,      // цель, ₽ чистой прибыли в месяц
+  cl_start: 54,         // подписчиков «Старт» в сценарии
+  cl_pro: 38,           // подписчиков «Про»
+  cl_max: 15,           // подписчиков «Максимум»
+  sutki_m: 30,          // покупок «Суток» в месяц (оценка)
+  rasp_m: 1,            // личных распаковок в месяц (оценка, финмодель 28.10)
+  free_m: 150,          // человек в месяц берут бесплатные ролики в боте-подарке (оценка)
+  free_rolls: 2,        // бесплатных роликов на человека (СОСТОЯНИЕ.md: «два ролика бесплатно»)
+
+  /* --- тарифы: цена, состав, доля анимированных, ИИ на план, соцсети, отток --- */
+  // цены — KZ_TARIFFS на сервере (сверено 14.11.2026); состав — server/pay/tarify_matrica.json
+  sutki_price: 990,  sutki_reels: 2,  sutki_cars: 3,   sutki_aR: 50, sutki_aC: 50, sutki_over: 0,   sutki_socials: 3,  sutki_igyt: 2, sutki_prof: 1,
+  start_price: 13990, start_reels: 15, start_cars: 30,  start_aR: 0,  start_aC: 0,  start_over: 190, start_socials: 5,  start_igyt: 2, start_prof: 1, start_churn: 12,
+  pro_price: 19990,  pro_reels: 45,   pro_cars: 65,    pro_aR: 30,   pro_aC: 0,    pro_over: 220,   pro_socials: 7,    pro_igyt: 2,   pro_prof: 1,   pro_churn: 10,
+  max_price: 29990,  max_reels: 75,   max_cars: 125,   max_aR: 30,   max_aC: 50,   max_over: 250,   max_socials: 10,   max_igyt: 4,   max_prof: 2,   max_churn: 8,
+  rasp_price: 39990,    // «Личная распаковка», разово (KZ_TARIFFS)
+  sutki_conv: 20,       // % купивших «Сутки», кто переходит в подписку (оценка)
+
+  /* --- нейросети и облако (финмодель 28.10, оценка ±30 %) --- */
+  aiR: 12, aiRa: 34, aiC: 12, aiCa: 15,  // ₽ за рилс / анимированный рилс / карусель / анимированную карусель
+  aiNew: 28,            // ₽ на знакомство с новым клиентом (разово)
+  aiRasp: 80,           // ₽ на одну распаковку
+  aiK: 1,               // поправка ко всем строкам ИИ (1,3 — верх вилки)
+  asrUsd: 0.01,         // $ расшифровка речи на рилс (fal Whisper)
+  cutUsd: 0.2,          // $ вырезка спикера на анимированный рилс (fal, проба 27.10)
+  kurs: 84,             // ₽ за доллар (сверить с ЦБ)
+
+  /* --- сервер сборки --- */
+  srvBase: 5112,        // ₽/мес Cloud.ru kz-mozg 4 ядра / 8 ГБ (СОСТОЯНИЕ.md)
+  srvLight: 1, srvHeavy: 1,  // сборок сразу: обычных / анимаций (настройка сервера 27.10)
+  hoursDay: 20,         // часов работы сборки в сутки (оценка)
+  reserve: 30,          // % мощности в запасе (оценка)
+  mR: 3.5, mRa: 15, mC: 1, mCa: 3,  // минут сборки: рилс (замер 16.10) / анимированный (проба 27.10) / карусель / анимированная карусель (оценки)
+  heavyW: 3,            // минута анимации = столько обычных минут (оценка)
+  crHour: 24,           // ₽/ч почасовой сервер Cloud.ru 16 ядер на наплыв
+  crLight: 12,          // обычных сборок сразу на нём (оценка)
+  posrednik: 490,       // ₽/мес посредник связи с Telegram, Hostkey (СОСТОЯНИЕ.md, 18.11)
+
+  /* --- публикация и хранение --- */
+  pubMode: 0,           // 0 — Instagram и YouTube через Upload-Post, остальное SmmBox; 1 — всё через SmmBox
+  upYear: 1,            // Upload-Post оплачен за год (1) или помесячно (0)
+  smmYear: 0,           // SmmBox за год со скидкой 30 % (1) или помесячно (0)
+  sutkiDays: 3,         // дней держим соцсети покупателя «Суток»
+  storage: 0,           // ₽ на клиента за хранение (хранилище на нашем сервере — 0)
+
+  /* --- оплата, возвраты, налоги --- */
+  gc: 3.5,              // % комиссия GetCourse
+  refunds: 2.5,         // % возвраты и споры (оценка)
+  priceReserve: 10,     // % запас на рост цен поставщиков (оценка)
+  usn: 6,               // % упрощённая система «доходы»
+  vznFix: 57390,        // ₽/год взносы ИП фиксированные (2026)
+  vzn1: 1, vzn1Thr: 300000, vzn1Cap: 321818,  // 1 % с дохода свыше 300 000 ₽, потолок
+  ndsThr: 20, ndsRate: 5,  // НДС на упрощёнке: порог, млн ₽ в год; ставка, %
+
+  /* --- команда --- */
+  mgrFrom: 50, mgrPer: 50, mgrSalary: 60000,  // первый менеджер с 50-го клиента, 1 на 50, ₽/мес
+  mgrMode: 1,           // 0 самозанятый, 1 договор ГПХ, 2 штат
+  vznStaff: 30,         // % взносы с оплаты менеджера
+  shtatExtra: 9,        // % отпуска и больничные (только штат)
+  buh: 50000, buhFrom: 50,  // бухгалтерия ₽/мес, с какого числа подписчиков
+  founderHours: 40, founderRate: 0,  // часы основателей в месяц и цена часа (0 — не считаем)
+  manualPer: 150,       // ₽ на клиента: ручной дизайн и монтаж в сложных случаях
+
+  /* --- сервисы --- */
+  rko: 1000, chatplace: 2000, domain: 500, backup: 500, devSubs: 8400, gcFee: 0, otherFix: 0,  // ₽/мес
+  lawyerOnce: 30000,    // ₽ разово, в первом месяце прогноза
+
+  /* --- привлечение --- */
+  acqMode: 0,           // 0 — приток задан числом; 1 — приток = реклама ÷ стоимость привлечения
+  adFirst: 8700, adMin: 8700,  // ₽ реклама первого месяца и минимум в месяц (решение 28.10)
+  adReinvest: 20,       // % прибыли до рекламы идёт в рекламу (решение 17.10)
+  cacIn: 15000,         // ₽ стоимость привлечения одного платящего (для режима 1, оценка)
+
+  /* --- прогноз --- */
+  months: 12,           // месяцев в прогнозе
+  startSubs: 0,         // подписчиков на старте (живых оплат месячных тарифов пока нет)
+  startCash: 0,         // ₽ денег на счёте завода на старте
+  newDirect: 5,         // новых подписчиков напрямую в первый месяц (подобрано под сценарий)
+  newGrowth: 10,        // % рост прямого притока в месяц
+  sutkiF: 12,           // покупок «Суток» в первый месяц прогноза
+  sutkiGrowth: 10,      // % рост «Суток» и бесплатных роликов в месяц
+  freeF: 60,            // человек с бесплатными роликами в первый месяц прогноза
+  raspF: 1              // распаковок в месяц в прогнозе
+};
+
+/* ---------------- подписи полей и источники ----------------
+   [ключ, подпись, единица, шаг, метка (zamer/cena/reshenie/ocenka), откуда, варианты-для-списка] */
+const GROUPS = [
+  { tariffGrid: true, title: "Тарифы: цена, состав, отток", hint: "цены — KZ_TARIFFS 14.11; состав — tarify_matrica.json", open: true,
+    exp: "<b>Что это:</b> цена и наполнение каждого тарифа и сколько подписчиков уходит за месяц. <b>Откуда:</b> цены сверены с настройкой сервера 14.11.2026, рилсы и карусели — сетка 17.10; доли анимированных, ИИ на план, соцсети и отток — оценки финмодели 28.10. <b>Влияет:</b> цена — на выручку; состав — на расходы нейросетей, сервера и публикации; отток — на срок жизни клиента, LTV и сколько новых клиентов нужно в месяц." },
+  { title: "Клиенты сценария", hint: "установившийся месяц: сколько подписчиков каждого тарифа", open: true,
+    exp: "<b>Что это:</b> число платящих в обычный месяц — на нём считаются сценарий, себестоимость, юнит-экономика и месяц сценария. <b>Откуда:</b> подобрано моделью под цель 1 000 000 ₽ чистыми при долях 35 : 25 : 10 (финмодель 28.10). <b>Влияет:</b> на всё, кроме прогноза (у прогноза свой приток).", fields: [
+    ["cl_start", "Подписчиков «Старт»", "чел", 1, "ocenka", "Подобрано под цель. Доля тарифа в продажах — оценка финмодели 28.10."],
+    ["cl_pro", "Подписчиков «Про»", "чел", 1, "ocenka", ""],
+    ["cl_max", "Подписчиков «Максимум»", "чел", 1, "ocenka", ""],
+    ["sutki_m", "Покупок «Суток» в месяц", "шт", 1, "ocenka", "Пробный тариф 990 ₽, один раз на человека. Живых оплат — 2 (19.10 и 28.10)."],
+    ["sutki_conv", "Из «Суток» переходят в подписку", "%", 1, "ocenka", "990 ₽ засчитываются в первый платёж (решение владельца 17.10) — модель вычитает их из выручки."],
+    ["rasp_m", "Личных распаковок в месяц", "шт", 1, "ocenka", "Разовая услуга 39 990 ₽, созвон с Валерией и командой."],
+    ["free_m", "Человек в месяц берут бесплатные ролики", "чел", 10, "ocenka", "Бот-подарок: два ролика бесплатно. Это расход без выручки — нейросети, облако и минуты сервера."],
+    ["free_rolls", "Бесплатных роликов на человека", "шт", 1, "reshenie", "СОСТОЯНИЕ.md, «Что продаём»: «два ролика бесплатно»."]
+  ]},
+  { title: "Нейросети и облако", hint: "рубли на одну штуку, оценка ±30 %", open: false,
+    exp: "<b>Что это:</b> сколько стоят тексты, сценарии и проверки нейросетью (Claude через Cloud.ru) на один ролик или карусель, и облачные расшифровка речи и вырезка спикера (fal). <b>Откуда:</b> финмодель 28.10, расчёт <code>tools/raschet_rashoda</code>; живого замера всех ролей нет. <b>Влияет:</b> на прямые расходы клиента; даже ×2 почти не меняет итог — это 3–8 % цены тарифа.", fields: [
+    ["aiR", "Обычный рилс", "₽", 1, "ocenka", "Копирайтер Sonnet + два судьи Haiku + арбитр Opus в 30 % случаев. Худший разумный — 65 ₽."],
+    ["aiRa", "Анимированный рилс", "₽", 1, "ocenka", "То же + режиссёр анимации. Худший — до 600 ₽."],
+    ["aiC", "Карусель", "₽", 1, "ocenka", "Тексты слайдов, подпись, судьи. Худший — 62 ₽."],
+    ["aiCa", "Анимированная карусель", "₽", 1, "ocenka", "Студия 3.0. Худший — 72 ₽."],
+    ["aiNew", "Знакомство с новым клиентом (разово)", "₽", 1, "ocenka", "Интервью и первая книга смыслов — в месяц прихода клиента."],
+    ["aiRasp", "Нейросети на одну распаковку", "₽", 5, "ocenka", "Книга смыслов по полному интервью."],
+    ["aiK", "Поправка ко всем строкам ИИ", "×", 0.1, "ocenka", "1 — как посчитано; 1,3 — верх вилки ±30 %; 3 — если модели думают до потолка."],
+    ["asrUsd", "Расшифровка речи в облаке fal — на рилс", "$", 0.005, "ocenka", "reels_studio/vyrezka_oblako.py: Whisper на fal, «около 1 цента»."],
+    ["cutUsd", "Вырезка спикера в облаке fal — на анимированный рилс", "$", 0.01, "cena", "Проба 27.10: ~0,2 $ за ролик. Платим своим ключом (решение владельца 27.10)."],
+    ["kurs", "Курс доллара", "₽", 0.5, "cena", "ЦБ 03.10.2026 — 83,48 ₽. Сверить на сегодня."]
+  ]},
+  { title: "Сервер сборки", hint: "kz-mozg + почасовой сервер на наплыв", open: false,
+    exp: "<b>Что это:</b> основной сервер, где собираются ролики и карусели, и почасовой сервер, который включается, когда основной не успевает. <b>Откуда:</b> цена — СОСТОЯНИЕ.md (09.11), время сборки — замеры 16.10 и 27.10. <b>Влияет:</b> основной сервер — постоянный расход; сверх его мощности каждая минута сборки оплачивается по часам. Модель показывает загрузку основного сервера.", fields: [
+    ["srvBase", "Основной сервер Cloud.ru kz-mozg 4 ядра / 8 ГБ", "₽/мес", 10, "cena", "СОСТОЯНИЕ.md, «Где работает»: ≈ 5 112 ₽ в месяц, с 20.10."],
+    ["srvLight", "Обычных сборок сразу на основном", "шт", 1, "reshenie", "Настройка сервера с 27.10 (KZ_LYOGKIJ_SBOROK=1). Сколько выдержат 4 ядра — не мерили."],
+    ["srvHeavy", "Анимаций сразу на основном", "шт", 1, "reshenie", "KZ_TYAZHELYJ_SBOROK=1 с 27.10."],
+    ["hoursDay", "Часов работы сборки в сутки", "ч", 1, "ocenka", "Ночью заказов меньше; 20 — с запасом."],
+    ["reserve", "Запас мощности", "%", 5, "ocenka", "Сколько мощности не занимаем сборками клиентов: бот-подарок, сайт, пики."],
+    ["mR", "Обычный рилс — минут сборки", "мин", 0.1, "zamer", "Замер 16.10: рилс с субтитрами 3 мин 27 с."],
+    ["mRa", "Анимированный рилс — минут сборки", "мин", 1, "zamer", "Проба 27.10 на kz-mozg: 14,6 мин."],
+    ["mC", "Карусель — минут сборки", "мин", 0.1, "ocenka", "Не мерили."],
+    ["mCa", "Анимированная карусель — минут", "мин", 0.5, "ocenka", "Не мерили."],
+    ["heavyW", "Минута анимации = обычных минут", "×", 0.5, "ocenka", "Анимация занимает больше памяти и ядер."],
+    ["crHour", "Почасовой сервер Cloud.ru 16 ядер — час", "₽/ч", 0.5, "cena", "≈ 23,8 ₽ в час (СЕРВЕРЫ_СРАВНЕНИЕ_16-10.md); выключенный почти бесплатен."],
+    ["crLight", "Обычных сборок сразу на почасовом", "шт", 1, "ocenka", "Не мерили."],
+    ["posrednik", "Посредник связи с Telegram (Hostkey)", "₽/мес", 10, "cena", "СОСТОЯНИЕ.md, 18.11: из сети Cloud.ru Telegram недоступен, 490 ₽ в месяц."]
+  ]},
+  { title: "Публикация и хранение", hint: "Upload-Post, SmmBox", open: false,
+    exp: "<b>Что это:</b> сервисы, через которые завод публикует в соцсети клиентов. Upload-Post — Instagram и YouTube (профиль на клиента), SmmBox — остальные соцсети (страница на каждую). <b>Откуда:</b> тарифы с сайтов 14.10 и 03.10. <b>Влияет:</b> расход растёт ступенями — следующий тариф поставщика включается, когда кончаются места.", fields: [
+    ["pubMode", "Через что публикуем Instagram и YouTube", "", 1, "reshenie", "Upload-Post — Instagram и YouTube идут через профиль Upload-Post, остальные — через SmmBox. SmmBox — всё через SmmBox.", [[0, "Upload-Post"], [1, "SmmBox"]]],
+    ["upYear", "Upload-Post оплачен за год", "", 1, "cena", "За год: Basic $16, Professional $33, Advanced $118, Business $350 в месяц; помесячно $24 / $50 / $147 / $438.", [[1, "за год"], [0, "помесячно"]]],
+    ["smmYear", "SmmBox оплачен за год (−30 %)", "", 1, "cena", "1 700 ₽ — 50 страниц, 3 400 ₽ — 150 (сайт SmmBox, 03.10).", [[0, "помесячно"], [1, "за год"]]],
+    ["sutkiDays", "Дней держим соцсети покупателя «Суток»", "дн", 1, "ocenka", "После — отключаем, если не перешёл в подписку."],
+    ["storage", "Хранение файлов — на клиента", "₽/мес", 10, "reshenie", "Хранилище на нашем сервере — отдельно не платим."]
+  ]},
+  { title: "Оплата, возвраты, налоги", hint: "GetCourse, упрощёнка 6 %, взносы ИП, НДС", open: false,
+    exp: "<b>Что это:</b> что удерживается с каждой оплаты и что платится государству. <b>Откуда:</b> GetCourse — сайт 17.10; налоги — Налоговый кодекс и закон № 425-ФЗ (подробно — раздел «Налоги»). <b>Влияет:</b> вместе это около 12–17 % выручки — самая большая статья после рекламы и команды.", fields: [
+    ["gc", "Комиссия GetCourse", "%", 0.1, "cena", "Карты РФ и СБП «до 3,5 %»; новым 2,9 % на первые 100 000 ₽."],
+    ["refunds", "Возвраты и споры", "% выручки", 0.5, "ocenka", "Оценка 2–3 %."],
+    ["priceReserve", "Запас на рост цен поставщиков", "%", 1, "ocenka", "Надбавка к нейросетям, серверу, публикации и сервисам."],
+    ["usn", "Упрощённая система «доходы»", "%", 0.5, "reshenie", "ИП Чиркова, 6 % с полученных денег, уменьшается на взносы."],
+    ["vznFix", "Взносы ИП — фиксированные за год", "₽/год", 10, "cena", "2026 год: 57 390 ₽ (статья 430 Налогового кодекса)."],
+    ["vzn1", "Взнос с дохода свыше порога", "%", 0.1, "cena", "1 % с дохода свыше 300 000 ₽ за год."],
+    ["vzn1Thr", "Порог для 1 %", "₽/год", 1000, "cena", ""],
+    ["vzn1Cap", "Потолок взноса 1 % за год", "₽/год", 1, "cena", "321 818 ₽ за 2026 год."],
+    ["ndsThr", "НДС — порог дохода за год", "млн ₽", 1, "cena", "Закон № 425-ФЗ: с 2026 года без НДС — только при доходе до 20 млн ₽."],
+    ["ndsRate", "НДС — ставка", "%", 1, "cena", "5 % при доходе 20–272,5 млн ₽, без вычетов; сидит внутри цены."]
+  ]},
+  { title: "Команда", hint: "менеджеры, бухгалтерия, основатели, ручная работа", open: false,
+    exp: "<b>Что это:</b> люди. До 50 клиентов основатели ведут сами, с 50-го — бухгалтерия и первый менеджер. <b>Откуда:</b> решение владельца 17.10; ставки — оценки. <b>Влияет:</b> на 50 клиентах прибыль проседает ступенькой — разом добавляются ≈ 128 000 ₽ в месяц.", fields: [
+    ["mgrFrom", "Первый менеджер — с какого числа подписчиков", "чел", 1, "reshenie", "Решение владельца 17.10."],
+    ["mgrPer", "Клиентов на одного менеджера", "чел", 5, "ocenka", "Ступени: с 50 — один, со 100 — два, со 150 — три."],
+    ["mgrSalary", "Менеджер — оплата в месяц", "₽/мес", 1000, "ocenka", "Оценка 60 000 ₽, без взносов."],
+    ["mgrMode", "Как оформлен менеджер", "", 1, "reshenie", "Самозанятый — без взносов, вычет из налога полный. ГПХ или штат — взносы, налог можно уменьшить не больше чем наполовину.", [[0, "самозанятый"], [1, "договор ГПХ"], [2, "штат"]]],
+    ["vznStaff", "Взносы с оплаты менеджера", "%", 1, "cena", "30 % (статья 425 НК РФ); малый бизнес — около 25 %."],
+    ["shtatExtra", "Штат: отпуска и больничные", "%", 1, "ocenka", "Только для штата."],
+    ["buh", "Бухгалтерия на аутсорсе", "₽/мес", 1000, "reshenie", "Решение владельца 17.10."],
+    ["buhFrom", "Бухгалтерия — с какого числа подписчиков", "чел", 1, "reshenie", "До 50 клиентов — 0 ₽."],
+    ["founderHours", "Часов основателей в месяц", "ч", 5, "ocenka", "Поддержка, проверки, разработка."],
+    ["founderRate", "Цена часа основателей", "₽/ч", 500, "reshenie", "0 — время Валерии и Антона не считаем."],
+    ["manualPer", "Ручной дизайн и монтаж — на клиента", "₽/мес", 50, "ocenka", "Когда сборка не справилась и нужен человек."]
+  ]},
+  { title: "Сервисы", hint: "банк, ChatPlace, домен, копии, подписки, юрист", open: false,
+    exp: "<b>Что это:</b> постоянные подписки и счета, не зависящие от числа клиентов. <b>Откуда:</b> оценки финмодели 28.10; Claude Max — цена Anthropic. <b>Влияет:</b> вместе с сервером и посредником это «пол» расходов, который надо покрыть до первой прибыли.", fields: [
+    ["rko", "Банк: расчётный счёт", "₽/мес", 100, "ocenka", "У многих банков 0–2 500 ₽."],
+    ["chatplace", "ChatPlace для бота", "₽/мес", 100, "ocenka", "Уточнить в кабинете."],
+    ["domain", "Домен и почта", "₽/мес", 100, "ocenka", ""],
+    ["backup", "Резервные копии вне сервера", "₽/мес", 100, "ocenka", "Сейчас копии на том же сервере — второе место ждёт слова владельца."],
+    ["devSubs", "Подписки разработки (Claude Code и др.)", "₽/мес", 100, "ocenka", "Claude Max 5× — $100 в месяц."],
+    ["gcFee", "Абонплата GetCourse — доля завода", "₽/мес", 100, "reshenie", "Школа оплачивается под коробку; сколько относить на завод — решает владелец."],
+    ["otherFix", "Прочие постоянные расходы", "₽/мес", 500, "ocenka", ""],
+    ["lawyerOnce", "Юрист и документы — разово", "₽", 1000, "ocenka", "Оферта, политика данных. Только в первом месяце прогноза."]
+  ]},
+  { title: "Прогноз и привлечение", hint: "реклама, приток, стартовые числа", open: false,
+    exp: "<b>Что это:</b> сколько тратим на рекламу и сколько клиентов приходит каждый месяц прогноза. <b>Откуда:</b> бюджет и реинвест — решения владельца 17.10 и 28.10; приток подобран, чтобы к 12-му месяцу выйти на сценарий. <b>Влияет:</b> на прогноз и CAC; реклама — ещё и на чистую прибыль сценария (20 % прибыли до рекламы).", fields: [
+    ["adReinvest", "Доля прибыли до рекламы — в рекламу", "%", 1, "reshenie", "Решение владельца 17.10 «реинвестировать по 20 %»: доля прибыли после всех расходов и налогов, но до рекламы. 0 — реклама только минимум."],
+    ["adMin", "Реклама — минимум в месяц", "₽", 100, "reshenie", "Кампания «Онлайн-сервис» ≈ 8 700 ₽ в месяц (решение 28.10). С 22.11 подписка снята с сайта thestartmachine.ru — идёт ли эта кампания сейчас, не проверено."],
+    ["adFirst", "Реклама — первый месяц прогноза", "₽", 100, "reshenie", ""],
+    ["acqMode", "Как считать приток в прогнозе", "", 1, "reshenie", "Числом — задан ниже. От бюджета — новые = реклама ÷ стоимость привлечения.", [[0, "задан числом"], [1, "от бюджета рекламы"]]],
+    ["cacIn", "Стоимость привлечения одного платящего", "₽", 500, "ocenka", "Только для режима «от бюджета». Фактических данных нет."],
+    ["months", "Месяцев в прогнозе", "мес", 1, "reshenie", "12–36."],
+    ["startSubs", "Подписчиков на старте", "чел", 1, "zamer", "СОСТОЯНИЕ.md 09.11: месячные тарифы живыми деньгами ещё не оплачивал никто."],
+    ["startCash", "Денег на счёте завода на старте", "₽", 10000, "ocenka", ""],
+    ["newDirect", "Новых подписчиков напрямую в первый месяц", "чел", 1, "ocenka", "Без перешедших из «Суток». Подобрано, чтобы к 12-му месяцу выйти на сценарий."],
+    ["newGrowth", "Рост прямого притока в месяц", "%", 1, "ocenka", ""],
+    ["sutkiF", "Покупок «Суток» в первый месяц", "шт", 1, "ocenka", ""],
+    ["freeF", "Людей с бесплатными роликами в первый месяц", "чел", 5, "ocenka", ""],
+    ["sutkiGrowth", "Рост «Суток» и бесплатных роликов в месяц", "%", 1, "ocenka", ""],
+    ["raspF", "Распаковок в месяц", "шт", 1, "ocenka", ""]
+  ]}
+];
+// строки таблицы тарифов: [суффикс, подпись, единица, шаг, метка, нужно ли «Суткам»]
+const TGRID = [
+  ["price", "Цена", "₽", 10, "cena", true],
+  ["reels", "Рилсов", "шт", 1, "cena", true],
+  ["cars", "Каруселей", "шт", 1, "cena", true],
+  ["aR", "Анимированных рилсов", "%", 5, "ocenka", true],
+  ["aC", "Анимированных каруселей", "%", 5, "ocenka", true],
+  ["over", "Нейросети на план месяца, советы, разборы", "₽", 10, "ocenka", true],
+  ["socials", "Соцсетей у клиента", "шт", 1, "ocenka", true],
+  ["igyt", "Из них Instagram и YouTube", "шт", 1, "ocenka", true],
+  ["prof", "Профилей Upload-Post", "шт", 1, "ocenka", true],
+  ["churn", "Отток в месяц", "%", 1, "ocenka", false]
+];
+const TCODES = ["sutki", "start", "pro", "max"], SUBS = ["start", "pro", "max"];
+const TNAME = { sutki: "Сутки", start: "Старт", pro: "Про", max: "Максимум" };
+const TAG = { zamer: "замер", cena: "цена", ocenka: "оценка", reshenie: "решение" };
+
+/*MODEL-START*/
+/* ===================== расчёт ===================== */
+function upCost(P, profiles) {   // Upload-Post: ступени тарифов, $ в месяц
+  const p = Math.ceil(profiles - 1e-9);
+  if (p <= 0) return { usd: 0, name: "не нужен" };
+  const y = P.upYear >= 1;
+  const opts = [[5, 16, 24, "Basic"], [10, 16 + 120 / 12, 24 + 15, "Basic +5"], [15, 16 + 200 / 12, 24 + 25, "Basic +10"],
+    [25, 33, 50, "Professional"], [40, 33 + 280 / 12, 50 + 35, "Professional +15"], [50, 33 + 440 / 12, 50 + 55, "Professional +25"],
+    [75, 118, 147, "Advanced"], [100, 118 + 650 / 12, 147 + 65, "Advanced +25"], [125, 118 + 1150 / 12, 147 + 115, "Advanced +50"], [225, 350, 438, "Business"]];
+  let best = null;
+  opts.forEach(o => { if (o[0] >= p) { const usd = y ? o[1] : o[2]; if (!best || usd < best.usd) best = { usd: usd, name: o[3] }; } });
+  const biz = (y ? 350 : 438) + Math.max(0, p - 225);
+  if (!best || biz < best.usd) best = { usd: biz, name: p > 225 ? "Business +" + (p - 225) : "Business" };
+  return best;
+}
+function smmCost(P, pages) {     // SmmBox: страница = подключённая соцсеть
+  const p = Math.ceil(pages - 1e-9), k = P.smmYear >= 1 ? 0.7 : 1;
+  if (p <= 0) return { rub: 0, name: "не нужен" };
+  if (p <= 50) return { rub: 1700 * k, name: "ЭКСПЕРТ" };
+  if (p <= 150) return { rub: 3400 * k, name: "БИЗНЕС" };
+  const n = Math.floor(p / 150), rest = p - n * 150;
+  if (rest === 0) return { rub: 3400 * n * k, name: "БИЗНЕС ×" + n };
+  if (rest <= 50) return { rub: (3400 * n + 1700) * k, name: "БИЗНЕС ×" + n + " + ЭКСПЕРТ" };
+  return { rub: 3400 * (n + 1) * k, name: "БИЗНЕС ×" + (n + 1) };
+}
+function tv(P, c, k) { return P[c + "_" + k]; }
+// на одного клиента тарифа c за месяц (у «Суток» — за покупку)
+function unitOf(P, c) {
+  const reels = tv(P, c, "reels"), cars = tv(P, c, "cars"), a = tv(P, c, "aR") / 100, ac = tv(P, c, "aC") / 100;
+  const ai = (reels * ((1 - a) * P.aiR + a * P.aiRa) + cars * ((1 - ac) * P.aiC + ac * P.aiCa) + tv(P, c, "over")) * P.aiK;
+  const fal = reels * (P.asrUsd + a * P.cutUsd) * P.kurs;
+  const w = (reels * ((1 - a) * P.mR + a * P.mRa * P.heavyW) + cars * ((1 - ac) * P.mC + ac * P.mCa * P.heavyW)) / 60; // взвешенных часов сборки
+  const viaSmm = P.pubMode >= 1, igyt = tv(P, c, "igyt");
+  const prof = viaSmm || igyt <= 0 ? 0 : tv(P, c, "prof");
+  const pages = viaSmm ? tv(P, c, "socials") : Math.max(0, tv(P, c, "socials") - igyt);
+  return { ai: ai, fal: fal, w: w, prof: prof, pages: pages };
+}
+// налог за год: Y — поступления за год, staffVzn — взносы за работника за год
+function taxYear(P, Y, staffVzn, hired) {
+  const nds = Y > P.ndsThr * 1e6 ? Y * P.ndsRate / (100 + P.ndsRate) : 0;
+  const inc = Y - nds;
+  const one = Math.min(P.vzn1Cap, Math.max(0, inc - P.vzn1Thr) * P.vzn1 / 100);
+  const ip = P.vznFix + one, usn = inc * P.usn / 100;
+  const ded = Math.min(hired ? usn * 0.5 : usn, ip + staffVzn);
+  return { nds: nds, usn: usn, ded: ded, usnNet: usn - ded, ip: ip, ipFix: P.vznFix, ipOne: one, total: nds + usn - ded + ip };
+}
+// один месяц. s = {n:{start,pro,max}, sutki, conv, rasp, free, newSubs, lawyer}, tax: функция(R, staffVzn, hired) → объект налога за месяц
+function monthCalc(P, s, taxFn, adFn) {
+  const N = SUBS.reduce((a, c) => a + (s.n[c] || 0), 0);
+  const U = {}; TCODES.forEach(c => { U[c] = unitOf(P, c); });
+  const revSubs = SUBS.reduce((a, c) => a + s.n[c] * tv(P, c, "price"), 0);
+  const revSutki = s.sutki * P.sutki_price, credit = s.conv * P.sutki_price, revRasp = s.rasp * P.rasp_price;
+  const R = revSubs + revSutki - credit + revRasp;
+  const dW = s.sutki * P.sutkiDays / 30;
+  // нейросети и облако
+  const aiSubs = SUBS.reduce((a, c) => a + s.n[c] * U[c].ai, 0), falSubs = SUBS.reduce((a, c) => a + s.n[c] * U[c].fal, 0);
+  const aiOther = s.sutki * U.sutki.ai + s.free * P.free_rolls * P.aiR * P.aiK + s.newSubs * P.aiNew * P.aiK + s.rasp * P.aiRasp;
+  const falOther = s.sutki * U.sutki.fal + s.free * P.free_rolls * P.asrUsd * P.kurs;
+  const ai = aiSubs + aiOther, fal = falSubs + falOther;
+  // сервер
+  const wSubs = SUBS.reduce((a, c) => a + s.n[c] * U[c].w, 0);
+  const W = wSubs + s.sutki * U.sutki.w + s.free * P.free_rolls * P.mR / 60;
+  const cap = (P.srvLight + P.heavyW * P.srvHeavy) * P.hoursDay * 30 * (1 - P.reserve / 100);
+  const over = Math.max(0, W - cap);
+  const srvOver = P.crLight > 0 ? over * P.crHour / P.crLight : 0;
+  const srv = P.srvBase + srvOver;
+  // публикация
+  const prof = SUBS.reduce((a, c) => a + s.n[c] * U[c].prof, 0) + dW * U.sutki.prof;
+  const pages = SUBS.reduce((a, c) => a + s.n[c] * U[c].pages, 0) + dW * U.sutki.pages;
+  const up = upCost(P, prof), sm = smmCost(P, pages);
+  const pub = up.usd * P.kurs + sm.rub;
+  const store = P.storage * N, manual = P.manualPer * N;
+  const kom = R * P.gc / 100, ref = R * P.refunds / 100;
+  // постоянные
+  const services = P.rko + P.chatplace + P.domain + P.backup + P.devSubs + P.gcFee + P.otherFix + P.posrednik;
+  const resv = (ai + fal + srv + pub + services) * P.priceReserve / 100;
+  const from = Math.max(1, P.mgrFrom);
+  const mgr = N >= from - 1e-9 && P.mgrPer > 0 ? 1 + Math.floor((N - from) / P.mgrPer + 1e-9) : 0;
+  const mode = Math.round(P.mgrMode), pay = mgr * P.mgrSalary;
+  const staffVzn = mode === 0 ? 0 : pay * P.vznStaff / 100;
+  const staff = pay * (1 + (mode === 2 ? P.shtatExtra / 100 : 0)) + staffVzn;
+  const buh = N >= Math.max(1, P.buhFrom) - 1e-9 ? P.buh : 0;
+  const founders = P.founderHours * P.founderRate;
+  const lawyer = s.lawyer ? P.lawyerOnce : 0;
+  const direct = ai + fal + srv + pub + store + manual;
+  const gross = R - direct - kom - ref;
+  const fixed = services + resv + staff + buh + founders + lawyer;
+  const tax = taxFn(R, staffVzn, mgr > 0 && mode > 0);
+  const beforeAds = gross - fixed - tax.total;
+  const ads = adFn(beforeAds);
+  const net = beforeAds - ads;
+  return { N: N, n: s.n, U: U, revSubs: revSubs, revSutki: revSutki, credit: credit, revRasp: revRasp, R: R,
+    ai: ai, fal: fal, aiSubs: aiSubs, falSubs: falSubs, W: W, wSubs: wSubs, cap: cap, load: cap > 0 ? W / cap : 0, srvOver: srvOver, srv: srv,
+    prof: prof, pages: pages, up: up, sm: sm, pub: pub, store: store, manual: manual, kom: kom, ref: ref,
+    services: services, resv: resv, mgr: mgr, staff: staff, staffVzn: staffVzn, buh: buh, founders: founders, lawyer: lawyer,
+    direct: direct, gross: gross, fixed: fixed, tax: tax, beforeAds: beforeAds, ads: ads, net: net };
+}
+// установившийся месяц: налог как будто месяц повторяется 12 раз, реклама — доля прибыли того же месяца
+function steady(P, n, k) {
+  k = k == null ? 1 : k;   // k — масштаб «Суток», распаковок и бесплатных роликов (для графика безубыточности)
+  const conv = k * P.sutki_m * P.sutki_conv / 100;
+  const churned = SUBS.reduce((a, c) => a + n[c] * tv(P, c, "churn") / 100, 0);
+  const s = { n: n, sutki: k * P.sutki_m, conv: conv, rasp: k * P.rasp_m, free: k * P.free_m, newSubs: churned, lawyer: false };
+  const taxFn = (R, sv, hired) => { const t = taxYear(P, 12 * R, 12 * sv, hired); const o = {}; Object.keys(t).forEach(k => { o[k] = t[k] / 12; }); return o; };
+  const adFn = x => Math.max(P.adMin, P.adReinvest / 100 * Math.max(0, x));
+  const m = monthCalc(P, s, taxFn, adFn);
+  m.churned = churned; m.needDirect = Math.max(0, churned - conv); m.conv = conv;
+  return m;
+}
+function scenN(P) { return { start: P.cl_start, pro: P.cl_pro, max: P.cl_max }; }
+function mixOf(P) {
+  const t = P.cl_start + P.cl_pro + P.cl_max;
+  return t > 0 ? { start: P.cl_start / t, pro: P.cl_pro / t, max: P.cl_max / t } : { start: 35 / 70, pro: 25 / 70, max: 10 / 70 };
+}
+// N подписчиков по долям, целыми (наибольший остаток)
+function splitN(mix, N) {
+  const raw = SUBS.map(c => N * mix[c]), fl = raw.map(Math.floor);
+  let rest = N - fl.reduce((a, b) => a + b, 0);
+  const order = raw.map((x, i) => [x - fl[i], i]).sort((a, b) => b[0] - a[0]);
+  for (let i = 0; rest > 0; i++, rest--) fl[order[i % 3][1]]++;
+  return { start: fl[0], pro: fl[1], max: fl[2] };
+}
+function solveTarget(P, target, limit) {
+  const mix = mixOf(P);
+  for (let N = 0; N <= (limit || 5000); N++) { const n = splitN(mix, N); const m = steady(P, n); if (m.net >= target) return { N: N, n: n, m: m }; }
+  return null;
+}
+function forecast(P) {
+  const M = Math.max(1, Math.min(36, Math.round(P.months)));
+  const mix = mixOf(P);
+  let n = { start: P.startSubs * mix.start, pro: P.startSubs * mix.pro, max: P.startSubs * mix.max };
+  let cash = P.startCash, prevBefore = null, ytdR = 0, ytdIp1 = 0, ytdNdsOn = false;
+  const rows = [];
+  for (let m = 1; m <= M; m++) {
+    if ((m - 1) % 12 === 0) { ytdR = 0; ytdIp1 = 0; ytdNdsOn = false; }
+    const g = Math.pow(1 + P.sutkiGrowth / 100, m - 1);
+    const sutki = P.sutkiF * g, free = P.freeF * g, conv = sutki * P.sutki_conv / 100;
+    const ad = m === 1 ? P.adFirst : Math.max(P.adMin, P.adReinvest / 100 * Math.max(0, prevBefore));
+    const direct = P.acqMode >= 1 ? (P.cacIn > 0 ? ad / P.cacIn : 0) : P.newDirect * Math.pow(1 + P.newGrowth / 100, m - 1);
+    const newT = direct + conv;
+    let churned = 0;
+    const nn = {};
+    SUBS.forEach(c => { const out = n[c] * tv(P, c, "churn") / 100; churned += out; nn[c] = n[c] - out + newT * mix[c]; });
+    n = nn;
+    const taxFn = (R, sv, hired) => {
+      const nds = ytdNdsOn ? R * P.ndsRate / (100 + P.ndsRate) : 0;
+      const inc = R - nds;
+      const before = ytdR; ytdR += inc;
+      if (!ytdNdsOn && ytdR > P.ndsThr * 1e6) ytdNdsOn = true;   // НДС — со следующего месяца
+      const oneTot = Math.min(P.vzn1Cap, Math.max(0, ytdR - P.vzn1Thr) * P.vzn1 / 100);
+      const one = oneTot - ytdIp1; ytdIp1 = oneTot;
+      const ip = P.vznFix / 12 + one, usn = inc * P.usn / 100;
+      const ded = Math.min(hired ? usn * 0.5 : usn, ip + sv);
+      void before;
+      return { nds: nds, usn: usn, ded: ded, usnNet: usn - ded, ip: ip, ipFix: P.vznFix / 12, ipOne: one, total: nds + usn - ded + ip };
+    };
+    const r = monthCalc(P, { n: n, sutki: sutki, conv: conv, rasp: P.raspF, free: free, newSubs: newT, lawyer: m === 1 }, taxFn, () => ad);
+    prevBefore = r.beforeAds;
+    cash += r.net;
+    r.m = m; r.newT = newT; r.directNew = direct; r.convN = conv; r.churnedN = churned; r.sutkiN = sutki; r.cash = cash;
+    rows.push(r);
+  }
+  return rows;
+}
+/*MODEL-END*/
+
+/* ===================== состояние, сохранение ===================== */
+const KEY = "kz-finmodel-server-2-0";
+const P = Object.assign({}, DEFAULTS);
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (s && s.val && s.base) Object.keys(s.val).forEach(k => {
+      // правку берём, только если исходное значение в файле с тех пор не менялось
+      if (k in DEFAULTS && s.base[k] === DEFAULTS[k] && isFinite(s.val[k])) P[k] = +s.val[k];
+    });
+  } catch (e) {}
+}
+function save() {
+  try {
+    const val = {}, base = {};
+    Object.keys(DEFAULTS).forEach(k => { if (P[k] !== DEFAULTS[k]) { val[k] = P[k]; base[k] = DEFAULTS[k]; } });
+    if (Object.keys(val).length) localStorage.setItem(KEY, JSON.stringify({ val: val, base: base })); else localStorage.removeItem(KEY);
+  } catch (e) {}
+}
+load();
+
+/* ===================== форматирование ===================== */
+const nf0 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 });
+const rub = x => (x < 0 ? "−" : "") + nf0.format(Math.abs(Math.round(x))) + " ₽";
+const pct = x => nf1.format(x) + " %";
+const kRub = x => { const a = Math.abs(x), s = x < 0 ? "−" : ""; return a >= 1e6 ? s + nf1.format(a / 1e6).replace(/,0$/, "") + " млн ₽" : a >= 1e4 ? s + nf0.format(a / 1e3) + " тыс ₽" : rub(x); };
+const cls = x => x >= 0 ? "pos" : "neg";
+const $ = id => document.getElementById(id);
+const plural = (n, a, b, c) => { n = Math.abs(Math.round(n)) % 100; const d = n % 10; return n > 10 && n < 20 ? c : d === 1 ? a : d >= 2 && d <= 4 ? b : c; };
+
+/* ===================== поля ===================== */
+function fieldHtml(f) {
+  const [k, label, unit, step, tag, note, opts] = f;
+  const ch = P[k] !== DEFAULTS[k];
+  const ctl = opts
+    ? "<select id='f_" + k + "' data-k='" + k + "'" + (ch ? " class='ch'" : "") + ">" + opts.map(o => "<option value='" + o[0] + "'" + (+P[k] === o[0] ? " selected" : "") + ">" + o[1] + "</option>").join("") + "</select>"
+    : "<input type='number' id='f_" + k + "' data-k='" + k + "' inputmode='decimal' step='" + step + "' value='" + P[k] + "'" + (ch ? " class='ch'" : "") + ">";
+  return "<div class='field" + (ch ? " changed" : "") + "'><label for='f_" + k + "'>" + label + "</label><div class='inp'>" + ctl + "<span class='unit'>" + unit + "</span></div>" +
+    "<div class='note'><span class='src " + tag + "'>" + TAG[tag] + "</span>" + (note || "Исходное: " + nf1.format(DEFAULTS[k]) + " " + unit) + (ch ? " · исходное: " + nf1.format(DEFAULTS[k]) : "") + "</div></div>";
+}
+function gridHtml() {
+  let h = "<div class='table-wrap'><table class='t min700'><thead><tr><th>Что</th>" + TCODES.map(c => "<th>" + TNAME[c] + "</th>").join("") + "<th>Откуда</th></tr></thead><tbody>";
+  TGRID.forEach(r => {
+    h += "<tr><td>" + r[1] + ", " + r[2] + "</td>";
+    TCODES.forEach(c => {
+      const k = c + "_" + r[0];
+      if (c === "sutki" && !r[5]) { h += "<td>—</td>"; return; }
+      const ch = P[k] !== DEFAULTS[k];
+      h += "<td><input type='number' aria-label='" + TNAME[c] + ": " + r[1] + "' data-k='" + k + "' inputmode='decimal' step='" + r[3] + "' value='" + P[k] + "'" + (ch ? " class='ch'" : "") + "></td>";
+    });
+    h += "<td style='text-align:left'><span class='src " + r[4] + "'>" + TAG[r[4]] + "</span></td></tr>";
+  });
+  h += "<tr><td>Личная распаковка, ₽</td><td colspan='4' style='text-align:left'><input type='number' aria-label='Цена личной распаковки' data-k='rasp_price' step='10' value='" + P.rasp_price + "'" + (P.rasp_price !== DEFAULTS.rasp_price ? " class='ch'" : "") + "> разово</td><td style='text-align:left'><span class='src cena'>цена</span></td></tr>";
+  return h + "</tbody></table></div><p class='small'>Цены «Сутки» 990, «Старт» 13 990 (с 01.11), «Про» 19 990, «Максимум» 29 990, распаковка 39 990 ₽ — <code>KZ_TARIFFS</code>, сверено 14.11.2026. Рилсы и карусели — <code>server/pay/tarify_matrica.json</code>. У «Суток» — на одну покупку, отток не нужен (разовая покупка). Красная рамка — значение изменено.</p>";
+}
+function renderGroups() {
+  const openState = {};
+  document.querySelectorAll("#groups details").forEach((d, i) => { openState[i] = d.open; });
+  $("groups").innerHTML = GROUPS.map((g, i) => {
+    const open = i in openState ? openState[i] : g.open;
+    const body = g.tariffGrid ? gridHtml() : g.fields.map(fieldHtml).join("");
+    return "<details class='group" + (g.tariffGrid ? " wide" : "") + "'" + (open ? " open" : "") + "><summary><span><h3 style='margin:0'>" + g.title + "</h3><span class='hint'>" + g.hint + "</span></span></summary><div class='gbody'><div class='gexp'>" + g.exp + "</div>" + body + "</div></details>";
+  }).join("");
+}
+document.addEventListener("change", e => {
+  const k = e.target && e.target.dataset && e.target.dataset.k;
+  if (!k) return;
+  const v = parseFloat(String(e.target.value).replace(",", "."));
+  if (!isFinite(v)) { e.target.value = P[k]; return; }
+  P[k] = v; save(); renderGroups(); render();
+});
+
+/* ===================== всплывающая подсказка ===================== */
+const tip = $("tip");
+function showTip(html, x, y) {
+  tip.innerHTML = html; tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let L = x + 14, T = y + 14;
+  if (L + w > window.innerWidth - 8) L = x - w - 14;
+  if (L < 8) L = 8;
+  if (T + h > window.innerHeight - 8) T = y - h - 14;
+  tip.style.left = L + "px"; tip.style.top = T + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+window.addEventListener("scroll", hideTip, { passive: true });
+
+/* ===================== графики (SVG, в масштабе) ===================== */
+function niceTicks(lo, hi, n) {
+  if (lo === hi) { hi = lo + 1; }
+  const span = hi - lo, step0 = span / Math.max(1, n), mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const st = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+  const a = Math.floor(lo / st) * st, b = Math.ceil(hi / st) * st, t = [];
+  for (let v = a; v <= b + st / 2; v += st) t.push(Math.round(v / st) * st);
+  return t;
+}
+function widthOf(el, def) { const w = el.clientWidth; return w > 200 ? w : def; }
+// линии: xs — подписи по оси X (числа), series [{name, color, vals}], опции
+function lineChart(el, xs, series, o) {
+  const W = widthOf(el, 600), H = o.h || 280, ml = 64, mr = 14, mt = 12, mb = 30;
+  const all = series.reduce((a, s) => a.concat(s.vals), []).concat(o.extraY || []);
+  let lo = Math.min(0, ...all), hi = Math.max(0, ...all);
+  const ticks = niceTicks(lo, hi, 5); lo = ticks[0]; hi = ticks[ticks.length - 1];
+  const x0 = xs[0], x1 = xs[xs.length - 1];
+  const X = v => ml + (W - ml - mr) * (x1 === x0 ? 0.5 : (v - x0) / (x1 - x0));
+  const Y = v => mt + (H - mt - mb) * (1 - (v - lo) / (hi - lo));
+  let g = "";
+  ticks.forEach(t => { g += "<line x1='" + ml + "' x2='" + (W - mr) + "' y1='" + Y(t) + "' y2='" + Y(t) + "' stroke='" + (t === 0 ? "var(--line-strong)" : "var(--grid)") + "' stroke-width='1'/>" +
+    "<text x='" + (ml - 8) + "' y='" + (Y(t) + 4) + "' text-anchor='end'>" + kRub(t).replace(" ₽", "") + "</text>"; });
+  const xt = o.xticks || xs;
+  xt.forEach(v => { g += "<text x='" + X(v) + "' y='" + (H - 10) + "' text-anchor='middle'>" + (o.xfmt ? o.xfmt(v) : v) + "</text>"; });
+  if (o.xlabel) g += "<text x='" + (W - mr) + "' y='" + (H - 10) + "' text-anchor='end' style='fill:var(--ink-3)'></text>";
+  (o.marks || []).forEach(mk => {
+    g += "<line x1='" + X(mk.x) + "' x2='" + X(mk.x) + "' y1='" + mt + "' y2='" + (H - mb) + "' stroke='var(--ink-3)' stroke-dasharray='4 4'/>";
+    g += "<text x='" + (X(mk.x) + (mk.left ? -6 : 6)) + "' y='" + (mt + 12 + (mk.dy || 0)) + "' text-anchor='" + (mk.left ? "end" : "start") + "' style='fill:var(--ink-2);font-weight:600'>" + mk.label + "</text>";
+  });
+  series.forEach(s => {
+    const d = s.vals.map((v, i) => (i ? "L" : "M") + X(xs[i]).toFixed(1) + "," + Y(v).toFixed(1)).join("");
+    if (s.area) g += "<path d='" + d + "L" + X(xs[xs.length - 1]) + "," + Y(Math.max(lo, 0)) + "L" + X(xs[0]) + "," + Y(Math.max(lo, 0)) + "Z' fill='" + s.color + "' opacity='.12'/>";
+    g += "<path d='" + d + "' fill='none' stroke='" + s.color + "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>";
+  });
+  (o.points || []).forEach(p => { g += "<circle cx='" + X(p.x) + "' cy='" + Y(p.y) + "' r='5' fill='" + p.color + "' stroke='var(--card)' stroke-width='2'/>"; });
+  g += "<line class='cross' x1='0' x2='0' y1='" + mt + "' y2='" + (H - mb) + "' stroke='var(--ink-3)' stroke-width='1' style='display:none'/>";
+  series.forEach((s, i) => { g += "<circle class='dot" + i + "' r='4' fill='" + s.color + "' stroke='var(--card)' stroke-width='2' style='display:none'/>"; });
+  g += "<rect class='hit' x='" + ml + "' y='" + mt + "' width='" + (W - ml - mr) + "' height='" + (H - mt - mb) + "' fill='transparent'/>";
+  el.innerHTML = "<svg viewBox='0 0 " + W + " " + H + "' role='img' aria-label='" + (o.aria || "график") + "'>" + g + "</svg>";
+  const svg = el.querySelector("svg"), hit = svg.querySelector(".hit"), cross = svg.querySelector(".cross");
+  const move = ev => {
+    const pt = ev.touches ? ev.touches[0] : ev;
+    const r = svg.getBoundingClientRect(), sx = (pt.clientX - r.left) * W / r.width;
+    let bi = 0, bd = 1e9; xs.forEach((v, i) => { const d = Math.abs(X(v) - sx); if (d < bd) { bd = d; bi = i; } });
+    const cx = X(xs[bi]);
+    cross.setAttribute("x1", cx); cross.setAttribute("x2", cx); cross.style.display = "";
+    series.forEach((s, i) => { const c = svg.querySelector(".dot" + i); c.setAttribute("cx", cx); c.setAttribute("cy", Y(s.vals[bi])); c.style.display = ""; });
+    showTip("<b>" + o.tipTitle(xs[bi], bi) + "</b><br>" + series.map(s => "<i style='background:" + s.color + "'></i>" + s.name + ": " + rub(s.vals[bi])).join("<br>") + (o.tipExtra ? o.tipExtra(bi) : ""), pt.clientX, pt.clientY);
+  };
+  const leave = () => { cross.style.display = "none"; series.forEach((s, i) => { svg.querySelector(".dot" + i).style.display = "none"; }); hideTip(); };
+  hit.addEventListener("mousemove", move); hit.addEventListener("touchstart", move, { passive: true }); hit.addEventListener("touchmove", move, { passive: true });
+  hit.addEventListener("mouseleave", leave); hit.addEventListener("touchend", () => setTimeout(leave, 1800));
+}
+// горизонтальные столбики из частей: rows [{name, total, parts:[{name,color,val}]}]
+function stackChart(el, rows) {
+  const W = widthOf(el, 600), lw = W < 480 ? 74 : 96, mr = 10, bh = 28, gap = 22, mt = 4;
+  const H = mt + rows.length * (bh + gap) + 16;
+  const max = Math.max(...rows.map(r => r.total));
+  const X = v => lw + (W - lw - mr) * v / max;
+  let g = "";
+  rows.forEach((r, i) => {
+    const y = mt + i * (bh + gap);
+    g += "<text x='0' y='" + (y + bh / 2 + 4) + "' style='fill:var(--ink);font-weight:600'>" + r.name + "</text>";
+    let acc = 0;
+    r.parts.forEach((p, j) => {
+      const v = Math.max(0, p.val); if (v <= 0) return;
+      const x = X(acc), w = Math.max(0, X(acc + v) - X(acc) - 2);
+      g += "<rect class='seg' data-i='" + i + "' data-j='" + j + "' x='" + x + "' y='" + y + "' width='" + w + "' height='" + bh + "' rx='3' fill='" + p.color + "'/>";
+      acc += v;
+    });
+    g += "<text x='" + lw + "' y='" + (y + bh + 14) + "'>" + rub(r.total) + " — цена; остаётся " + rub(r.parts[r.parts.length - 1].val) + " (" + pct(r.parts[r.parts.length - 1].val / r.total * 100) + ")</text>";
+  });
+  el.innerHTML = "<svg viewBox='0 0 " + W + " " + H + "' role='img' aria-label='Куда уходит цена тарифа'>" + g + "</svg>";
+  el.querySelectorAll(".seg").forEach(s => {
+    const f = ev => { const pt = ev.touches ? ev.touches[0] : ev; const r = rows[+s.dataset.i], p = r.parts[+s.dataset.j];
+      showTip("<b>" + r.name + "</b><br><i style='background:" + p.color + "'></i>" + p.name + ": " + rub(p.val) + " (" + pct(p.val / r.total * 100) + " цены)", pt.clientX, pt.clientY); };
+    s.addEventListener("mousemove", f); s.addEventListener("touchstart", f, { passive: true }); s.addEventListener("mouseleave", hideTip);
+  });
+}
+
+/* ===================== вывод ===================== */
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function kpi(k, v, n, main, c) { return "<div class='kpi" + (main ? " main" : "") + "'><div class='k'>" + k + "</div><div class='v " + (c || "") + "'>" + v + "</div><div class='n'>" + n + "</div></div>"; }
+
+function render() {
+  const S = steady(P, scenN(P));
+  const fc = forecast(P);
+  const isDefault = Object.keys(DEFAULTS).every(k => P[k] === DEFAULTS[k]);
+  const N = S.N;
+  // ----- сценарий -----
+  $("goalTag").textContent = isDefault ? "Сценарий по умолчанию" : "Ваш сценарий (цифры изменены)";
+  $("goalBig").innerHTML = (isDefault ? "Чистая прибыль <em>" + rub(S.net) + "</em> в месяц — для этого нужно <em>" + nf0.format(N) + " " + plural(N, "клиент", "клиента", "клиентов") + "</em>"
+    : "Чистая прибыль <em>" + rub(S.net) + "</em> в месяц при <em>" + nf0.format(N) + " " + plural(N, "подписчике", "подписчиках", "подписчиках") + "</em>");
+  $("goalMix").innerHTML = "По тарифам: <b>«Старт» " + nf0.format(P.cl_start) + "</b> · <b>«Про» " + nf0.format(P.cl_pro) + "</b> · <b>«Максимум» " + nf0.format(P.cl_max) + "</b> платящих подписчиков, плюс " +
+    nf0.format(P.sutki_m) + " покупок «Суток» и " + nf0.format(P.rasp_m) + " " + plural(P.rasp_m, "распаковка", "распаковки", "распаковок") + " в месяц. Выручка " + rub(S.R) + " в месяц (" + kRub(S.R * 12) + " в год).";
+  if (document.activeElement !== $("target")) $("target").value = P.target;
+  $("goalNote").innerHTML = "Как посчитано: выручка − прямые расходы " + rub(S.direct) + " − комиссия и возвраты " + rub(S.kom + S.ref) + " − команда и сервисы " + rub(S.fixed) + " − налоги " + rub(S.tax.total) +
+    " − реклама " + rub(S.ads) + " (" + nf0.format(P.adReinvest) + " % прибыли до рекламы, решение владельца 17.10) = <b>" + rub(S.net) + "</b>. Чтобы удержать это число клиентов при оттоке, нужно ≈ " + nf1.format(S.churned) + " новых платящих в месяц." +
+    (isDefault ? "" : " Исходный сценарий — кнопка «Вернуть сценарий 1 млн».");
+  const fc12 = fc[Math.min(fc.length, 12) - 1];
+  const be = breakEven();
+  $("kpis").innerHTML =
+    kpi("Чистая прибыль в месяц", rub(S.net), "после налогов, рекламы и всех расходов", true, cls(S.net)) +
+    kpi("Выручка в месяц", rub(S.R), "подписка " + rub(S.revSubs) + ", «Сутки» и распаковки " + rub(S.revSutki - S.credit + S.revRasp)) +
+    kpi("Валовая маржа", pct(S.R > 0 ? S.gross / S.R * 100 : 0), "остаётся после прямых расходов, комиссии и возвратов") +
+    kpi("Безубыточность", be ? nf0.format(be.N) + " " + plural(be.N, "подписчик", "подписчика", "подписчиков") : "не достигается", "с этого числа завод не теряет деньги") +
+    kpi("Налоги в месяц", rub(S.tax.total), "упрощёнка, взносы ИП" + (S.tax.nds > 0 ? ", НДС" : "") + " — " + pct(S.R > 0 ? S.tax.total / S.R * 100 : 0) + " выручки") +
+    kpi("Прогноз: прибыль " + fc12.m + "-го месяца", rub(fc12.net), "подписчиков к этому месяцу ≈ " + nf0.format(fc12.N), false, cls(fc12.net));
+  // ----- полоса -----
+  $("stickyRow").innerHTML = [["Чистыми в месяц", rub(S.net), cls(S.net)], ["Подписчиков", nf0.format(N), ""], ["Выручка", kRub(S.R), ""], ["Безубыточность", be ? nf0.format(be.N) + " подп." : "—", ""], ["LTV / CAC", "", "ltvcac"]]
+    .map(x => "<div class='it'><span class='k'>" + x[0] + "</span><span class='v " + x[2] + "'>" + x[1] + "</span></div>").join("");
+  renderTariffs(S); const u = renderUnit(S); renderMonth(S); renderBE(S, be); renderForecast(fc); renderTax(S);
+  const lc = document.querySelector("#stickyRow .ltvcac"); if (lc) lc.textContent = isFinite(u.ratio) ? nf1.format(u.ratio) : "—";
+}
+
+function tariffRows(S) {
+  const effTax = S.R > 0 ? S.tax.total / S.R : 0;
+  const ohTotal = S.fixed + S.ads;   // команда, сервисы, запас, реклама — пропорционально цене (решение 17.10)
+  const perW = S.W > 0 ? S.srv / S.W : 0;
+  const perProf = S.prof > 0 ? S.up.usd * P.kurs / S.prof : 0, perPage = S.pages > 0 ? S.sm.rub / S.pages : 0;
+  return SUBS.map(c => {
+    const u = S.U[c], price = tv(P, c, "price");
+    const srv = u.w * perW, pub = u.prof * perProf + u.pages * perPage;
+    const kr = price * (P.gc + P.refunds) / 100, tax = price * effTax, oh = S.R > 0 ? ohTotal * price / S.R : 0;
+    const total = u.ai + u.fal + srv + pub + P.manualPer + P.storage + kr + tax + oh;
+    return { c: c, price: price, ai: u.ai, fal: u.fal, srv: srv, hours: u.w, pub: pub, manual: P.manualPer + P.storage, kr: kr, tax: tax, oh: oh, total: total, margin: price - total, direct: u.ai + u.fal + srv + pub + P.manualPer + P.storage };
+  });
+}
+function renderTariffs(S) {
+  const rows = tariffRows(S);
+  $("tarSub").textContent = "Расчёт при числе клиентов сценария (" + nf0.format(S.N) + " подписчиков): от него зависят доли сервера, публикации и общих расходов на одного клиента. Сервер загружен на " + pct(S.load * 100) +
+    (S.srvOver > 0 ? " — основному не хватает мощности, почасовой сервер добирает " + rub(S.srvOver) + " в месяц." : " основной мощности.") + " Публикация: Upload-Post " + S.up.name + ", SmmBox " + S.sm.name + ".";
+  const L = [["Цена тарифа", "price"], ["Нейросети", "ai"], ["Облако fal (расшифровка, вырезка)", "fal"], ["Сервер сборки (доля)", "srv"], ["Публикация (доля)", "pub"], ["Ручная работа и хранение", "manual"],
+    ["Прямые расходы — итого", "direct", "tot"], ["Комиссия GetCourse и возвраты", "kr"], ["Налоги (средняя ставка)", "tax"], ["Общие расходы и реклама (по цене)", "oh"], ["Остаётся заводу", "margin", "tot"]];
+  let h = "<thead><tr><th>Статья, ₽ на клиента в месяц</th>" + rows.map(r => "<th>" + TNAME[r.c] + "</th>").join("") + "</tr></thead><tbody>";
+  L.forEach(l => {
+    h += "<tr" + (l[2] ? " class='" + l[2] + "'" : "") + "><td>" + l[0] + "</td>" + rows.map(r => {
+      const v = r[l[1]];
+      const sub = l[1] === "margin" ? "<span class='s'>" + pct(v / r.price * 100) + " цены</span>" : l[1] === "srv" ? "<span class='s'>" + nf1.format(r.hours) + " ч сборки</span>" : "";
+      return "<td class='" + (l[1] === "margin" ? cls(v) : "") + "'>" + rub(v) + sub + "</td>";
+    }).join("") + "</tr>";
+  });
+  // «Сутки» отдельной строкой
+  const su = S.U.sutki;
+  h += "<tr class='grp'><td colspan='4'>Разовые покупки</td></tr><tr><td>«Сутки»: цена / прямые расходы на покупку</td><td colspan='3' style='text-align:left'>" + rub(P.sutki_price) + " / " + rub(su.ai + su.fal + su.w * (S.W > 0 ? S.srv / S.W : 0)) +
+    " (нейросети " + rub(su.ai) + ", облако " + rub(su.fal) + "); 990 ₽ засчитываются, если человек переходит в подписку</td></tr>";
+  h += "<tr><td>Бесплатные ролики: расход на человека</td><td colspan='3' style='text-align:left'>" + rub(P.free_rolls * (P.aiR * P.aiK + P.asrUsd * P.kurs)) + " — нейросети и расшифровка " + nf0.format(P.free_rolls) + " " + plural(P.free_rolls, "ролика", "роликов", "роликов") + ", выручки нет</td></tr>";
+  $("tarTable").innerHTML = h + "</tbody>";
+  const C = { ai: css("--s1"), srv: css("--s2"), pub: css("--s3"), man: css("--s4"), kr: css("--s5"), tax: css("--s7"), oh: css("--s8"), m: css("--s6") };
+  const parts = r => [{ name: "Нейросети и облако", color: C.ai, val: r.ai + r.fal }, { name: "Сервер сборки", color: C.srv, val: r.srv }, { name: "Публикация", color: C.pub, val: r.pub },
+    { name: "Ручная работа", color: C.man, val: r.manual }, { name: "Комиссия и возвраты", color: C.kr, val: r.kr }, { name: "Налоги", color: C.tax, val: r.tax },
+    { name: "Общие расходы и реклама", color: C.oh, val: r.oh }, { name: "Остаётся заводу", color: C.m, val: Math.max(0, r.margin) }];
+  $("splitLegend").innerHTML = parts(rows[0]).map(p => "<span><i style='background:" + p.color + "'></i>" + p.name + "</span>").join("");
+  stackChart($("splitChart"), rows.map(r => ({ name: TNAME[r.c], total: r.price, parts: parts(r) })));
+}
+function renderUnit(S) {
+  const N = S.N || 1;
+  const arpu = S.revSubs / N;
+  const rows = tariffRows(S);
+  const varPer = rows.reduce((a, r) => a + r.direct * S.n[r.c], 0) / N;
+  const contrib = arpu * (1 - (P.gc + P.refunds + P.usn) / 100) - varPer;
+  const churn = S.N > 0 ? S.churned / S.N : 0;
+  const life = churn > 0 ? 1 / churn : Infinity;
+  const ltv = contrib * life;
+  const cac = S.needDirect > 0 ? S.ads / S.needDirect : Infinity;
+  const ratio = ltv / cac, pay = contrib > 0 ? cac / contrib : Infinity;
+  const fin = x => isFinite(x);
+  $("unitKpis").innerHTML =
+    kpi("Средний чек (ARPU)", rub(arpu), "выручка подписки " + rub(S.revSubs) + " ÷ " + nf0.format(S.N) + " подписчиков") +
+    kpi("Прямые расходы на клиента", rub(varPer), "нейросети, облако, сервер, публикация, ручная работа — " + pct(arpu > 0 ? varPer / arpu * 100 : 0) + " чека") +
+    kpi("Вклад клиента в месяц", rub(contrib), "чек − комиссия " + nf1.format(P.gc) + " % − возвраты " + nf1.format(P.refunds) + " % − налог " + nf1.format(P.usn) + " % − прямые расходы", false, cls(contrib)) +
+    kpi("Отток и срок жизни", pct(churn * 100) + " · " + (fin(life) ? nf1.format(life) + " мес" : "∞"), "средний отток по долям тарифов; срок = 1 ÷ отток") +
+    kpi("LTV — доход с клиента за жизнь", fin(ltv) ? rub(ltv) : "∞", "вклад в месяц × срок жизни", true) +
+    kpi("CAC — привлечение одного", fin(cac) ? rub(cac) : "—", "реклама " + rub(S.ads) + " ÷ " + nf1.format(S.needDirect) + " новых в месяц (замена ушедших минус " + nf1.format(S.conv) + " из «Суток»)") +
+    kpi("LTV / CAC", fin(ratio) ? nf1.format(ratio) : "—", "больше 3 — привлечение выгодно; меньше 1 — убыточно", true, fin(ratio) ? (ratio >= 3 ? "pos" : ratio < 1 ? "neg" : "") : "") +
+    kpi("Окупаемость привлечения", fin(pay) ? nf1.format(pay) + " мес" : "—", "CAC ÷ вклад в месяц; должна быть меньше срока жизни (" + (fin(life) ? nf1.format(life) : "∞") + " мес)", false, fin(pay) && fin(life) ? (pay < life ? "pos" : "neg") : "");
+  let w = "";
+  if (P.acqMode >= 1 && P.cacIn > 0) {
+    const can = S.ads / P.cacIn + S.conv;
+    w = "Режим «приток от бюджета»: при стоимости привлечения " + rub(P.cacIn) + " реклама " + rub(S.ads) + " приводит ≈ " + nf1.format(S.ads / P.cacIn) + " новых в месяц (с «Сутками» — " + nf1.format(can) + "), а чтобы удержать " + nf0.format(S.N) + " подписчиков, нужно ≈ " + nf1.format(S.churned) + "." +
+      (can < S.churned ? " Не хватает — число клиентов будет снижаться." : " Хватает.");
+  }
+  $("unitWarn").textContent = w;
+  return { ratio: ratio };
+}
+function renderMonth(S) {
+  const t = S.tax;
+  const L = [
+    ["grp", "Выручка"],
+    ["Подписка: " + nf0.format(P.cl_start) + " × «Старт», " + nf0.format(P.cl_pro) + " × «Про», " + nf0.format(P.cl_max) + " × «Максимум»", S.revSubs],
+    ["«Сутки»: " + nf0.format(P.sutki_m) + " × " + rub(P.sutki_price), S.revSutki],
+    ["Зачёт 990 ₽ перешедшим из «Суток» (" + nf1.format(S.conv) + " чел.)", -S.credit],
+    ["Личные распаковки: " + nf0.format(P.rasp_m) + " × " + rub(P.rasp_price), S.revRasp],
+    ["tot", "Выручка итого", S.R],
+    ["grp", "Прямые расходы"],
+    ["Нейросети (подписчики, «Сутки», бесплатные ролики, знакомство, распаковки)", -S.ai],
+    ["Облако fal: расшифровка речи и вырезка спикера", -S.fal],
+    ["Сервер сборки: основной " + rub(P.srvBase) + (S.srvOver > 0 ? " + почасовой " + rub(S.srvOver) : "") + " · загрузка " + pct(S.load * 100), -S.srv],
+    ["Публикация: Upload-Post " + S.up.name + " (" + nf0.format(S.prof) + " проф.), SmmBox " + S.sm.name + " (" + nf0.format(S.pages) + " стр.)", -S.pub],
+    ["Ручная работа и хранение", -(S.manual + S.store)],
+    ["Комиссия GetCourse " + nf1.format(P.gc) + " %", -S.kom],
+    ["Возвраты " + nf1.format(P.refunds) + " %", -S.ref],
+    ["tot", "Валовая маржа (" + pct(S.R > 0 ? S.gross / S.R * 100 : 0) + ")", S.gross],
+    ["grp", "Постоянные расходы"],
+    ["Команда: " + S.mgr + " " + plural(S.mgr, "менеджер", "менеджера", "менеджеров") + " с взносами", -S.staff],
+    ["Бухгалтерия", -S.buh],
+    ["Сервисы: банк, ChatPlace, домен, копии, подписки, посредник Telegram", -S.services],
+    ["Запас на рост цен " + nf0.format(P.priceReserve) + " %", -S.resv],
+    ["Время основателей", -S.founders],
+    ["grp", "Налоги"],
+    ["Упрощёнка " + nf1.format(P.usn) + " % после вычета взносов", -t.usnNet],
+    ["Взносы ИП за себя", -t.ip],
+    ["НДС " + (t.nds > 0 ? nf0.format(P.ndsRate) + " % (годовая выручка выше порога)" : "— не платится (годовая выручка " + kRub(S.R * 12) + " ниже " + nf0.format(P.ndsThr) + " млн ₽)"), -t.nds],
+    ["tot", "Прибыль до рекламы", S.beforeAds],
+    ["Реклама: " + nf0.format(P.adReinvest) + " % прибыли до рекламы, не меньше " + rub(P.adMin), -S.ads],
+    ["hl", "Чистая прибыль", S.net]
+  ];
+  $("monthTable").innerHTML = "<thead><tr><th>Статья</th><th>₽ в месяц</th><th>% выручки</th></tr></thead><tbody>" + L.map(l => {
+    if (l[0] === "grp") return "<tr class='grp'><td colspan='3'>" + l[1] + "</td></tr>";
+    const tot = l[0] === "tot" || l[0] === "hl", name = tot ? l[1] : l[0], v = tot ? l[2] : l[1];
+    return "<tr" + (tot ? " class='" + (l[0] === "hl" ? "tot hl" : "tot") + "'" : "") + "><td style='white-space:normal;min-width:240px'>" + name + "</td><td class='" + (tot ? cls(v) : "") + "'>" + rub(v) + "</td><td>" + (S.R > 0 ? pct((v / S.R * 100) || 0) : "—") + "</td></tr>";
+  }).join("") + "</tbody>";
+}
+// «Сутки», распаковки и бесплатные ролики растут вместе с числом подписчиков: при сценарии — как в допущениях, при 0 — ноль
+function kOf(N) { const s = P.cl_start + P.cl_pro + P.cl_max; return s > 0 ? N / s : 0; }
+function stN(N) { return steady(P, splitN(mixOf(P), N), kOf(N)); }
+function breakEven() {
+  for (let N = 1; N <= 3000; N++) { const m = stN(N); if (m.net >= 0) return { N: N, m: m }; }
+  return null;
+}
+function renderBE(S, be) {
+  const mix = mixOf(P);
+  const top = Math.max(150, Math.ceil(S.N * 1.4 / 10) * 10);
+  const step = Math.max(1, Math.round(top / 150));
+  const xs = [], vals = [];
+  for (let N = 0; N <= top; N += step) { xs.push(N); vals.push(stN(N).net); }
+  $("beSub").innerHTML = be ? "Завод выходит в ноль с <b>" + nf0.format(be.N) + " " + plural(be.N, "подписчика", "подписчиков", "подписчиков") + "</b> (при тех же долях тарифов) — это " + rub(be.m.R) + " выручки в месяц. Сценарий — " + nf0.format(S.N) + " подписчиков и " + rub(S.net) + " чистыми." + (be.N < P.mgrFrom && P.founderRate <= 0 ? " Точка такая низкая, потому что до " + nf0.format(P.mgrFrom) + " клиентов нет ни команды, ни бухгалтерии, а время основателей не оплачивается (0 ₽ в час). Поставьте цену часа в группе «Команда» — увидите честную точку." : "")
+    : "При этих допущениях завод не выходит в ноль ни при каком числе подписчиков до 3 000 — проверьте цены и расходы.";
+  const marks = [];
+  if (be) marks.push({ x: be.N, label: "ноль: " + be.N, dy: 0 });
+  marks.push({ x: S.N, label: "сценарий: " + S.N, left: true, dy: 16 });
+  lineChart($("beChart"), xs, [{ name: "Чистая прибыль", color: css("--s3"), vals: vals }], {
+    h: 300, aria: "Чистая прибыль в месяц при разном числе подписчиков", xticks: niceTicks(0, top, 6).filter(v => v <= top), marks: marks,
+    points: [{ x: S.N, y: S.net, color: css("--s3") }],
+    tipTitle: x => nf0.format(x) + " " + plural(x, "подписчик", "подписчика", "подписчиков"),
+    tipExtra: i => { const m = stN(xs[i]); return "<br>выручка " + rub(m.R) + "<br>менеджеров " + m.mgr + (m.buh > 0 ? ", бухгалтерия есть" : ""); }
+  });
+  const Ns = [10, 25, 50, 75, 100, 150, 200, 300];
+  if (be && Ns.indexOf(be.N) < 0) Ns.push(be.N);
+  if (Ns.indexOf(S.N) < 0) Ns.push(S.N);
+  Ns.sort((a, b) => a - b);
+  let h = "<thead><tr><th>Подписчиков</th><th>Выручка</th><th>Прямые и комиссии</th><th>Команда и сервисы</th><th>Налоги</th><th>Реклама</th><th>Чистая прибыль</th><th>% выручки</th></tr></thead><tbody>";
+  Ns.forEach(N => {
+    const m = stN(N);
+    const tag = be && N === be.N ? " · ноль" : N === S.N ? " · сценарий" : "";
+    h += "<tr" + (N === S.N ? " class='hl'" : "") + "><td>" + nf0.format(N) + tag + "</td><td>" + rub(m.R) + "</td><td>" + rub(m.direct + m.kom + m.ref) + "</td><td>" + rub(m.fixed) + "</td><td>" + rub(m.tax.total) + "</td><td>" + rub(m.ads) + "</td><td class='" + cls(m.net) + "'>" + rub(m.net) + "</td><td>" + (m.R > 0 ? pct(m.net / m.R * 100) : "—") + "</td></tr>";
+  });
+  $("beTable").innerHTML = h + "</tbody>";
+}
+function renderForecast(fc) {
+  const firstPlus = fc.find(r => r.net >= 0);
+  let minCash = Infinity, minM = 0; fc.forEach(r => { if (r.cash < minCash) { minCash = r.cash; minM = r.m; } });
+  const back = fc.find(r => r.m > minM && r.cash >= P.startCash);
+  const last = fc[fc.length - 1];
+  $("fcSub").innerHTML = "Старт: " + nf0.format(P.startSubs) + " подписчиков. " + (firstPlus ? "Первый месяц с прибылью — <b>" + firstPlus.m + "-й</b>. " : "За " + fc.length + " мес. прибыли за месяц нет. ") +
+    (minCash < P.startCash ? "Наибольший минус денег — " + rub(minCash - P.startCash) + " в " + minM + "-м месяце (столько нужно вложить). " + (back ? "Вложенное возвращается к " + back.m + "-му месяцу. " : "За срок прогноза вложенное не возвращается. ") : "Деньги на счёте не уходят в минус. ") +
+    "К " + last.m + "-му месяцу — " + nf0.format(last.N) + " подписчиков, прибыль " + rub(last.net) + " за месяц, накоплено " + rub(last.cash) + ".";
+  const xs = fc.map(r => r.m);
+  const xt = fc.length > 18 ? xs.filter(m => m % 3 === 0 || m === 1) : xs;
+  lineChart($("fcChart"), xs, [
+    { name: "Выручка", color: css("--s1"), vals: fc.map(r => r.R) },
+    { name: "Все расходы с налогами", color: css("--s2"), vals: fc.map(r => r.R - r.net) },
+    { name: "Чистая прибыль", color: css("--s3"), vals: fc.map(r => r.net) }
+  ], { aria: "Выручка, расходы и прибыль по месяцам", xticks: xt, tipTitle: m => m + "-й месяц", tipExtra: i => "<br>подписчиков ≈ " + nf0.format(fc[i].N) });
+  lineChart($("cashChart"), xs, [{ name: "Деньги на конец месяца", color: css("--s1"), vals: fc.map(r => r.cash), area: true }],
+    { aria: "Деньги нарастающим итогом", xticks: xt, tipTitle: m => m + "-й месяц", marks: minCash < P.startCash ? [{ x: minM, label: "минимум " + kRub(minCash), dy: 0, left: minM > fc.length / 2 }] : [] });
+  let h = "<thead><tr><th>Месяц</th><th>Подписчиков<span class='s'>на конец</span></th><th>Новых</th><th>Ушло</th><th>«Сутки»</th><th>Выручка</th><th>Прямые и комиссии</th><th>Команда и сервисы</th><th>Реклама</th><th>Налоги</th><th>Чистая прибыль</th><th>Деньги на счёте</th></tr></thead><tbody>";
+  fc.forEach(r => {
+    h += "<tr><td>" + r.m + "</td><td>" + nf0.format(r.N) + "<span class='s'>" + nf0.format(r.n.start) + " / " + nf0.format(r.n.pro) + " / " + nf0.format(r.n.max) + "</span></td><td>" + nf1.format(r.newT) + "</td><td>" + nf1.format(r.churnedN) + "</td><td>" + nf0.format(r.sutkiN) + "</td><td>" + rub(r.R) + "</td><td>" + rub(r.direct + r.kom + r.ref) + "</td><td>" + rub(r.fixed) + "</td><td>" + rub(r.ads) + "</td><td>" + rub(r.tax.total) + "</td><td class='" + cls(r.net) + "'>" + rub(r.net) + "</td><td class='" + cls(r.cash) + "'>" + rub(r.cash) + "</td></tr>";
+  });
+  const sum = k => fc.reduce((a, r) => a + k(r), 0);
+  h += "<tr class='tot'><td>Итого</td><td>—</td><td>" + nf0.format(sum(r => r.newT)) + "</td><td>" + nf0.format(sum(r => r.churnedN)) + "</td><td>" + nf0.format(sum(r => r.sutkiN)) + "</td><td>" + rub(sum(r => r.R)) + "</td><td>" + rub(sum(r => r.direct + r.kom + r.ref)) + "</td><td>" + rub(sum(r => r.fixed)) + "</td><td>" + rub(sum(r => r.ads)) + "</td><td>" + rub(sum(r => r.tax.total)) + "</td><td class='" + cls(sum(r => r.net)) + "'>" + rub(sum(r => r.net)) + "</td><td>" + rub(last.cash) + "</td></tr>";
+  $("fcTable").innerHTML = h + "</tbody><caption class='small' style='caption-side:bottom;text-align:left;padding:8px'>Подписчики под числом — «Старт» / «Про» / «Максимум». Дробные клиенты — это среднее ожидаемое, а не люди. «Прямые и комиссии» — нейросети, облако, сервер, публикация, ручная работа, комиссия, возвраты. В первом месяце в «Команде и сервисах» — разовый юрист " + rub(P.lawyerOnce) + ".</caption>";
+}
+function renderTax(S) {
+  const t = S.tax, Y = S.R * 12;
+  $("taxCard").innerHTML = "<div class='table-wrap'><table class='t'><thead><tr><th>Шаг (месяц сценария × 12 = год)</th><th>За год</th><th>В месяц</th></tr></thead><tbody>" +
+    [["Поступления за год", Y], ["НДС " + nf0.format(P.ndsRate) + " % внутри цены — только если доход за год больше " + nf0.format(P.ndsThr) + " млн ₽", t.nds * 12],
+     ["Упрощёнка " + nf1.format(P.usn) + " % с дохода (без НДС)", t.usn * 12], ["Взносы ИП фиксированные", t.ipFix * 12], ["Взнос 1 % с дохода свыше " + rub(P.vzn1Thr) + " (не больше " + rub(P.vzn1Cap) + ")", t.ipOne * 12],
+     ["Вычет взносов из налога" + (S.mgr > 0 && P.mgrMode >= 1 ? " (есть работник — не больше половины налога)" : " (работников нет — вычет полный)"), -t.ded * 12],
+     ["Итого налоги и взносы", t.total * 12]].map((r, i, a) => "<tr" + (i === a.length - 1 ? " class='tot'" : "") + "><td style='white-space:normal'>" + r[0] + "</td><td>" + rub(r[1]) + "</td><td>" + rub(r[1] / 12) + "</td></tr>").join("") +
+    "</tbody></table></div><p class='small'>Взносы за менеджера (" + rub(S.staffVzn) + " в месяц) учтены в строке «Команда» и тоже уменьшают налог. В прогнозе налоги считаются нарастающим итогом с начала каждого 12-месячного периода: НДС включается со следующего месяца после того, как доход с начала года превысил порог.</p>";
+}
+
+/* ===================== кнопки ===================== */
+$("btnReset").addEventListener("click", () => {
+  Object.keys(DEFAULTS).forEach(k => { P[k] = DEFAULTS[k]; });
+  try { localStorage.removeItem(KEY); } catch (e) {}
+  renderGroups(); render();
+});
+$("btnSolve").addEventListener("click", () => {
+  const t = parseFloat(String($("target").value).replace(",", "."));
+  if (!isFinite(t)) return;
+  P.target = t;
+  const r = solveTarget(P, t, 5000);
+  if (!r) { $("goalNote").textContent = "Цель не достигается даже при 5 000 подписчиках — проверьте цены и расходы."; save(); return; }
+  P.cl_start = r.n.start; P.cl_pro = r.n.pro; P.cl_max = r.n.max;
+  save(); renderGroups(); render();
+});
+// тема
+const TKEY = "kz-finmodel-theme";
+function applyTheme(m) {
+  if (m === "light" || m === "dark") document.documentElement.setAttribute("data-theme", m); else document.documentElement.removeAttribute("data-theme");
+  document.querySelectorAll("[data-theme-set]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeSet === (m || "auto"))));
+}
+let theme = "auto"; try { theme = localStorage.getItem(TKEY) || "auto"; } catch (e) {}
+applyTheme(theme);
+document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => {
+  theme = b.dataset.themeSet; try { localStorage.setItem(TKEY, theme); } catch (e) {} applyTheme(theme); render();
+}));
+if (window.matchMedia) { const mq = window.matchMedia("(prefers-color-scheme: dark)"); if (mq.addEventListener) mq.addEventListener("change", render); }
+let rz = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(render, 150); });
+
+$("defDate").textContent = DEFAULTS_DATE; $("defDate2").textContent = DEFAULTS_DATE;
+renderGroups(); render();
+})();
+</script>
+</body>
+</html>
